@@ -1,21 +1,21 @@
 {
   "version": "2.0.0",
-  "revision": "20260722-200-r3",
+  "revision": "20260722-201-r4",
   "pinnedCommit": "main",
-  "minRuntimeRevision": 200,
-  "description": "不要玩弄我的鸡吧 - 云端 runtime v2.0.0（完全对齐星月）",
+  "minRuntimeRevision": 201,
+  "description": "不要玩弄我的鸡吧 - 云端 runtime v2.0.0（完全对齐星月，修复8个UI bug）",
   "modules": {
     "status-bar": {
       "file": "status-bar.html",
-      "size": 78461,
+      "size": 79310,
       "type": "html",
-      "description": "状态栏（14面：状态/环境/角色/技能/雷达/事件/任务/规则/资产/制造/载具/居所/商店/设置）"
+      "description": "状态栏 v2.0.1（修复雷达vals[j]/移动端溢出/筛选/搜索等8个bug）"
     },
     "opening-page": {
       "file": "opening-page.html",
       "size": 59108,
       "type": "html",
-      "description": "开局页（3视图：boot封面/wizard向导/workshop工坊）"
+      "description": "开局页（3视图：boot/wizard/workshop）"
     },
     "omni-analysis": {
       "file": "omni-analysis.html",
