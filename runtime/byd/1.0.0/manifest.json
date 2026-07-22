@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "revision": "20260722-100-r1",
+  "pinnedCommit": "main",
+  "minRuntimeRevision": 1,
+  "description": "不要玩弄我的鸡吧 - 云端 runtime",
+  "modules": {
+    "status-bar": {
+      "file": "status-bar.html",
+      "size": 58352,
+      "type": "html",
+      "description": "状态栏（8颵面）"
+    },
+    "control-center": {
+      "file": "control-center.js",
+      "size": 13531,
+      "type": "js",
+      "description": "控制中心"
+    }
+  }
+}
