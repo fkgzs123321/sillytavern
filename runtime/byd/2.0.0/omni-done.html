@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>变量同步完成 · 不要玩弄我的鸡吧</title>
+<style>
+:root{
+  --bg-0:#fff0f5;--bg-1:#ffe4ec;
+  --c-text:#5a3a4a;--c-dim:rgba(90,58,74,.65);--c-mute:rgba(90,58,74,.45);
+  --c-accent:#ff69b4;--c-pink:#ff1493;--c-deep:#ff1493;
+  --c-border:rgba(255,182,193,.4);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fs-xs:clamp(10px,2vw,11px);--fs-sm:clamp(11px,2.2vw,12px);--fs-base:clamp(12px,2.5vw,13px);--fs-md:clamp(13px,2.8vw,15px);--fs-lg:clamp(15px,3.2vw,17px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:var(--font);color:var(--c-text);background:transparent;font-size:var(--fs-base);line-height:1.55}
+@keyframes omni-pulse{
+  0%{box-shadow:0 0 0 0 rgba(255,105,180,.55),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+  70%{box-shadow:0 0 0 14px rgba(255,105,180,0),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+  100%{box-shadow:0 0 0 0 rgba(255,105,180,0),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+}
+.omni-done{
+  position:relative;
+  background:linear-gradient(135deg,rgba(255,240,245,.6),rgba(255,228,236,.5));
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid var(--c-border);
+  border-radius:18px;
+  padding:16px;
+  margin:8px 0;
+  box-shadow:0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5);
+  text-shadow:0 1px 4px rgba(255,255,255,.4);
+  animation:omni-pulse 2s ease-out 1;
+  overflow:hidden;
+}
+.omni-done::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 0%,rgba(255,105,180,.12),transparent 60%),
+             radial-gradient(circle at 100% 100%,rgba(255,20,147,.06),transparent 50%);
+}
+.omni-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px dashed var(--c-border);margin-bottom:10px;position:relative}
+.omni-check{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#ff69b4,#ff1493);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;font-weight:700;
+  box-shadow:0 3px 10px rgba(255,105,180,.4);
+}
+.omni-title{font-size:var(--fs-md);font-weight:700;color:var(--c-deep);letter-spacing:1px}
+.omni-sub{font-size:var(--fs-xs);color:var(--c-dim);margin-left:auto;white-space:nowrap}
+.omni-summary{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;
+  margin-bottom:10px;position:relative;
+}
+.omni-stat{
+  background:rgba(255,255,255,.45);
+  border:1px solid rgba(255,182,193,.3);
+  border-radius:12px;
+  padding:8px 10px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.omni-stat .k{font-size:var(--fs-xs);color:var(--c-dim)}
+.omni-stat .v{font-size:var(--fs-md);font-weight:700;color:var(--c-accent)}
+.omni-stat .v.up{color:var(--c-pink)}
+.omni-stat .v.down{color:#ff6b8a}
+.omni-changelog{font-size:var(--fs-sm);color:var(--c-dim);line-height:1.6;margin-bottom:4px;position:relative}
+.omni-changelog strong{color:var(--c-deep)}
+details.omni-detail{
+  margin-top:8px;
+  background:rgba(255,255,255,.35);
+  border:1px solid rgba(255,182,193,.3);
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+}
+details.omni-detail>summary{
+  list-style:none;cursor:pointer;
+  padding:9px 12px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent);
+  display:flex;align-items:center;gap:6px;
+}
+details.omni-detail>summary::-webkit-details-marker{display:none}
+details.omni-detail>summary .caret{margin-left:auto;transition:transform .2s;font-size:var(--fs-xs);color:var(--c-mute)}
+details.omni-detail[open]>summary{border-bottom:1px solid var(--c-border)}
+details.omni-detail[open]>summary .caret{transform:rotate(90deg)}
+.omni-detail-body{padding:10px 12px;font-size:var(--fs-xs);color:var(--c-dim);line-height:1.7}
+.omni-detail-body .row{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted rgba(255,182,193,.2)}
+.omni-detail-body .row:last-child{border-bottom:none}
+.omni-detail-body .row .key{color:var(--c-deep);font-weight:600}
+.omni-detail-body .row .delta{font-weight:700}
+.omni-detail-body .row .delta.up{color:var(--c-accent)}
+.omni-detail-body .row .delta.down{color:#ff6b8a}
+.omni-foot{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  margin-top:12px;padding-top:10px;border-top:1px dashed var(--c-border);position:relative;
+}
+.omni-btn{
+  min-height:38px;padding:7px 16px;border-radius:12px;cursor:pointer;
+  font-family:var(--font);font-size:var(--fs-sm);font-weight:600;
+  border:1px solid var(--c-border);
+  background:rgba(255,255,255,.5);
+  color:var(--c-deep);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:all .2s;display:inline-flex;align-items:center;gap:5px;
+}
+.omni-btn:hover{background:rgba(255,228,236,.7);border-color:var(--c-accent)}
+.omni-hint{font-size:var(--fs-xs);color:var(--c-mute);margin-right:auto;font-style:italic}
+@media(max-width:480px){
+  .omni-summary{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="omni-done">
+  <div class="omni-head">
+    <div class="omni-check">✓</div>
+    <div class="omni-title">变量同步完成</div>
+    <div class="omni-sub">4 项变更 · 已落库</div>
+  </div>
+  <div class="omni-summary">
+    <div class="omni-stat"><span class="k">精力</span><span class="v down">58</span></div>
+    <div class="omni-stat"><span class="k">疑心</span><span class="v up">48</span></div>
+    <div class="omni-stat"><span class="k">沉沦</span><span class="v up">22</span></div>
+    <div class="omni-stat"><span class="k">使用阶段</span><span class="v">4/5</span></div>
+  </div>
+  <div class="omni-changelog">
+    本次同步已写入 <strong>stats</strong>、<strong>use_stage</strong> 两个分组，共 <strong>4</strong> 个字段发生变化。
+  </div>
+  <details class="omni-detail">
+    <summary>
+      <span>📋 展开详情</span>
+      <span class="caret">▶</span>
+    </summary>
+    <div class="omni-detail-body">
+      <div class="row"><span class="key">stats.energy</span><span>75 → 58</span><span class="delta down">-17</span></div>
+      <div class="row"><span class="key">stats.suspicion</span><span>42 → 48</span><span class="delta up">+6</span></div>
+      <div class="row"><span class="key">stats.corruption</span><span>15 → 22</span><span class="delta up">+7</span></div>
+      <div class="row"><span class="key">use_stage.today_uses</span><span>3 → 4</span><span class="delta up">+1</span></div>
+    </div>
+  </details>
+  <div class="omni-foot">
+    <span class="omni-hint">✓ 同步成功</span>
+    <button class="omni-btn" type="button">查看记录</button>
+  </div>
+</div>
+</body>
+</html>
+```

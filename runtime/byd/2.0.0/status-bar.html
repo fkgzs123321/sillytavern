@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>状态栏 · 星月女子学院</title>
+<style>
+:root{
+  --bg-0:#fff0f5;--bg-1:#ffe4ec;--bg-card:rgba(255,192,203,.2);
+  --c-text:#fff0f5;--c-dim:rgba(255,240,245,.75);--c-border:rgba(255,182,193,.3);
+  --c-danger:#ff6b8a;--c-warn:#ff9ec4;--c-orange:#ff85a2;--c-safe:#ffb6d9;--c-accent:#ff69b4;--c-blue:#ff85a2;--c-pink:#ff1493;--c-silver:#ffc0cb;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fs-xs:clamp(10px,2vw,11px);--fs-sm:clamp(11px,2.2vw,12px);--fs-base:clamp(12px,2.5vw,13px);--fs-md:clamp(13px,2.8vw,15px);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{font-family:var(--font);color:var(--c-text);background:transparent;font-size:var(--fs-base);line-height:1.5}
+.sb{position:sticky;bottom:0;background:linear-gradient(135deg,rgba(255,240,245,.35),rgba(255,192,203,.25));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--c-border);border-radius:18px;padding:12px 14px;margin:6px 0;box-shadow:0 4px 20px rgba(255,105,180,.15);text-shadow:0 1px 6px rgba(139,58,82,.35)}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:8px;border-bottom:1px solid var(--c-border);margin-bottom:8px;flex-wrap:wrap}
+.hd-l{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.hd-t{font-size:var(--fs-md);font-weight:700;color:var(--c-accent);letter-spacing:1px;text-shadow:0 1px 8px rgba(255,105,180,.4)}
+.hd-sub{font-size:var(--fs-xs);color:var(--c-dim);width:100%;margin-top:2px}
+.pill{font-size:var(--fs-xs);padding:4px 10px;border-radius:14px;background:rgba(255,192,203,.18);border:1px solid rgba(255,182,193,.3);color:var(--c-accent);white-space:nowrap}
+.pill.warn{background:rgba(255,158,196,.18);border-color:rgba(255,158,196,.4);color:var(--c-warn)}
+.pill.danger{background:rgba(255,107,138,.18);border-color:rgba(255,107,138,.4);color:var(--c-danger)}
+.pill.safe{background:rgba(255,182,217,.18);border-color:rgba(255,182,217,.4);color:var(--c-safe)}
+.pill.silver{background:rgba(255,192,203,.15);border-color:rgba(255,192,203,.3);color:var(--c-silver)}
+.rfr{min-width:44px;min-height:44px;background:rgba(255,192,203,.2);border:1px solid var(--c-border);color:var(--c-accent);border-radius:14px;padding:6px 12px;cursor:pointer;font-size:var(--fs-md);flex-shrink:0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .2s}
+.rfr:hover{color:var(--c-text);background:rgba(255,192,203,.3)}
+.rfr.spinning{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+details.block{background:rgba(255,192,203,.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--c-border);border-radius:16px;padding:0;margin-bottom:8px;overflow:hidden}
+details.block>summary{font-size:var(--fs-sm);font-weight:700;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:5px;list-style:none}
+details.block>summary::-webkit-details-marker{display:none}
+details.block[open]>summary{border-bottom:1px solid var(--c-border)}
+details.block[open]>summary .caret{transform:rotate(90deg)}
+details.block>summary .caret{margin-left:auto;transition:transform .2s}
+.card-t.player{color:var(--c-safe)}
+.card-t.heroine{color:var(--c-accent)}
+.card-t.skill{color:#ffb6c1}
+.card-t.academic{color:var(--c-blue)}
+.card-t.symptom{color:var(--c-pink)}
+.card-t.hidden{color:var(--c-dim)}
+.card-t.list{color:var(--c-accent)}
+.card-t.event{color:var(--c-silver)}
+.block-body{padding:8px 12px 10px;display:block}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
+.kv{display:flex;flex-direction:column;gap:1px}
+.kv .k{font-size:var(--fs-xs);color:var(--c-dim)}
+.kv .v{font-size:var(--fs-sm);font-weight:600}
+.v.danger{color:var(--c-danger)}.v.warn{color:var(--c-warn)}.v.safe{color:var(--c-safe)}.v.neutral{color:var(--c-dim)}.v.accent{color:var(--c-accent)}.v.blue{color:var(--c-blue)}.v.pink{color:var(--c-pink)}.v.silver{color:var(--c-silver)}
+.bar{margin:4px 0}
+.bar-h{display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--c-dim);margin-bottom:2px}
+.bar-h .bv{color:var(--c-text);font-weight:600}
+.bar-t{height:8px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar-f{height:100%;border-radius:6px;transition:width .5s ease;width:0}
+.bar-f.r{background:linear-gradient(90deg,#ff6b8a,#ff1493)}
+.bar-f.o{background:linear-gradient(90deg,#ff85a2,#ff69b4)}
+.bar-f.y{background:linear-gradient(90deg,#ffb6c1,#ff85a2)}
+.bar-f.g{background:linear-gradient(90deg,#ffb6d9,#ff69b4)}
+.bar-f.b{background:linear-gradient(90deg,#ffc0cb,#ff85a2)}
+.bar-f.p{background:linear-gradient(90deg,#ff1493,#ff69b4)}
+.sect-title{font-size:var(--fs-xs);color:var(--c-dim);margin:8px 0 4px;font-weight:600;border-bottom:1px solid rgba(255,182,193,.2);padding-bottom:3px}
+.heroine-item{background:rgba(255,192,203,.1);border:1px solid rgba(255,182,193,.25);border-radius:12px;padding:6px 8px;margin-bottom:4px;cursor:pointer;transition:background .2s}
+.heroine-item:hover{background:rgba(255,192,203,.18)}
+.heroine-item.active{border-color:rgba(255,105,180,.5);background:rgba(255,192,203,.2)}
+.heroine-row{display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap}
+.heroine-name{font-weight:700;font-size:var(--fs-sm);color:var(--c-accent)}
+.heroine-role{font-size:var(--fs-xs);color:var(--c-dim)}
+.heroine-stats{display:flex;gap:4px;margin-top:2px;font-size:var(--fs-xs);color:var(--c-dim);flex-wrap:wrap}
+.shop-item{cursor:pointer;transition:background .15s}
+.shop-item.buyable:hover{background:rgba(255,192,203,.2)}
+.shop-item.disabled{opacity:.5;cursor:not-allowed}
+.shop-status{font-size:var(--fs-xs);padding:3px 10px;border-radius:10px;text-align:right;margin-top:3px}
+.shop-status.buyable{color:var(--c-safe)}
+.shop-status.disabled{color:var(--c-danger)}
+.loading{text-align:center;padding:30px;color:var(--c-dim);font-size:var(--fs-md);animation:pulse 1.2s ease infinite;text-shadow:0 1px 6px rgba(139,58,82,.35)}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,182,193,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9999;display:none;align-items:center;justify-content:center;padding:10px}
+.modal-overlay.show{display:flex}
+.modal{background:linear-gradient(135deg,#fff0f5,#ffe4ec);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--c-border);border-radius:20px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;padding:14px;box-shadow:0 8px 32px rgba(255,105,180,.25);text-shadow:0 1px 6px rgba(139,58,82,.35)}
+.modal-title{font-size:var(--fs-md);font-weight:700;margin-bottom:10px;color:var(--c-accent);display:flex;justify-content:space-between;align-items:center}
+.modal-close{min-width:44px;min-height:44px;background:rgba(255,192,203,.25);border:1px solid var(--c-border);color:var(--c-accent);border-radius:12px;padding:4px 10px;cursor:pointer;font-size:var(--fs-md)}
+.nsfw-tag{font-size:var(--fs-xs);padding:2px 6px;border-radius:8px;background:rgba(255,107,138,.15);border:1px solid rgba(255,107,138,.3);color:#ff6b8a;margin-left:4px}
+.sb-pages{min-height:150px}
+.sb-page{display:none}
+.sb-nav{display:flex;justify-content:space-around;align-items:stretch;gap:3px;padding:8px 0 0;border-top:1px solid var(--c-border);margin-top:8px;flex-wrap:nowrap}
+.sb-nav button{flex:1;min-width:44px;min-height:44px;background:rgba(255,192,203,.12);border:1px solid var(--c-border);color:var(--c-dim);border-radius:12px;padding:6px 2px;cursor:pointer;font-size:var(--fs-xs);transition:all .2s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);white-space:nowrap;font-family:var(--font)}
+.sb-nav button.active{background:rgba(255,105,180,.25);border-color:var(--c-accent);color:var(--c-accent);font-weight:700;box-shadow:0 2px 8px rgba(255,105,180,.2)}
+.sb-nav button:hover{background:rgba(255,192,203,.2);color:var(--c-accent)}
+.skill-card{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:12px;padding:8px 10px;margin-bottom:8px}
+.skill-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.skill-name{font-weight:700;font-size:var(--fs-sm);color:var(--c-accent)}
+.skill-tier{font-size:var(--fs-xs);padding:2px 8px;border-radius:8px;font-weight:700}
+.skill-tier.tg{background:rgba(255,182,217,.2);color:var(--c-safe)}
+.skill-tier.tb{background:rgba(255,192,203,.2);color:var(--c-blue)}
+.skill-tier.ty{background:rgba(255,182,217,.2);color:var(--c-warn)}
+.skill-tier.to{background:rgba(255,158,196,.2);color:var(--c-orange)}
+.skill-tier.tr{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.skill-desc{font-size:var(--fs-xs);color:var(--c-dim);margin-bottom:4px}
+.skill-foot{display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--c-dim);margin-top:2px}
+.skill-next{color:var(--c-accent)}
+.event-filter{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
+.filter-btn{min-height:44px;background:rgba(255,192,203,.12);border:1px solid var(--c-border);color:var(--c-dim);border-radius:10px;padding:4px 10px;cursor:pointer;font-size:var(--fs-xs);font-family:var(--font)}
+.filter-btn.active{background:rgba(255,105,180,.25);color:var(--c-accent);border-color:var(--c-accent)}
+.event-timeline{position:relative;padding-left:12px;border-left:2px solid var(--c-border)}
+.event-item{margin-bottom:6px;padding:6px 8px;background:rgba(255,192,203,.1);border-radius:8px;border:1px solid var(--c-border)}
+.event-row{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.event-type{font-size:var(--fs-xs);font-weight:700;color:var(--c-accent);padding:1px 6px;border-radius:6px;background:rgba(255,192,203,.15)}
+.event-time{font-size:var(--fs-xs);color:var(--c-dim)}
+.event-desc{font-size:var(--fs-xs);color:var(--c-text);margin-top:3px;line-height:1.4}
+.setting-btn{min-height:44px;background:rgba(255,192,203,.12);border:1px solid var(--c-border);color:var(--c-dim);border-radius:12px;padding:8px;cursor:pointer;font-size:var(--fs-sm);transition:all .2s;text-align:center;font-family:var(--font)}
+.setting-btn.active{background:rgba(255,105,180,.25);border-color:var(--c-accent);color:var(--c-accent);font-weight:700}
+.setting-btn:hover{background:rgba(255,192,203,.2);color:var(--c-accent)}
+.switch-label{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:12px;font-size:var(--fs-sm);color:var(--c-dim);cursor:pointer;min-height:44px}
+.switch-label input{margin:0;width:16px;height:16px}
+.empty-state{text-align:center;color:var(--c-dim);padding:30px 10px;font-size:var(--fs-md)}
+.batch-bar{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:10px;margin-bottom:6px}
+.batch-bar .batch-info{font-size:var(--fs-xs);color:var(--c-dim)}
+.batch-btn{min-height:36px;background:rgba(255,192,203,.18);border:1px solid var(--c-border);color:var(--c-accent);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:var(--fs-xs);font-family:var(--font)}
+.batch-btn:hover{background:rgba(255,105,180,.2)}
+.batch-btn.danger{color:var(--c-danger);border-color:rgba(255,107,138,.3)}
+.record-item{position:relative}
+.record-item .batch-check{position:absolute;top:6px;right:8px;width:16px;height:16px}
+.rec-expand-btn{font-size:var(--fs-xs);padding:2px 8px;border-radius:8px;background:rgba(255,192,203,.15);border:1px solid var(--c-border);color:var(--c-accent);cursor:pointer;margin-top:3px}
+.rec-expand-btn:hover{background:rgba(255,105,180,.2)}
+.rec-detail{display:none;padding:6px 8px;margin-top:4px;background:rgba(255,192,203,.06);border-radius:8px;font-size:var(--fs-xs);line-height:1.5}
+.rec-detail.show{display:block}
+.event-importance{font-size:var(--fs-xs);padding:1px 6px;border-radius:6px;font-weight:700;margin-left:4px}
+.event-importance.high{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.event-importance.mid{background:rgba(255,158,196,.2);color:var(--c-warn)}
+.event-importance.low{background:rgba(255,182,217,.15);color:var(--c-safe)}
+.radar-svg{display:block;margin:6px auto;max-width:200px;width:100%;height:auto}
+.radar-svg polygon.data{fill:rgba(255,105,180,.25);stroke:var(--c-accent);stroke-width:1.5;transition:all .4s ease}
+.radar-svg circle.dot{fill:var(--c-accent)}
+.radar-svg text{fill:var(--c-dim);font-size:9px;text-anchor:middle;dominant-baseline:middle}
+.radar-svg line.grid{stroke:rgba(255,182,193,.2);stroke-width:.5}
+.task-card{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:12px;padding:8px 10px;margin-bottom:6px;border-left:3px solid var(--c-accent)}
+.task-card.main{border-left-color:var(--c-warn)}
+.task-card.side{border-left-color:var(--c-blue)}
+.task-card.daily{border-left-color:var(--c-safe)}
+.task-card.hidden_t{border-left-color:var(--c-pink)}
+.task-type-tag{font-size:var(--fs-xs);padding:1px 6px;border-radius:6px;font-weight:700}
+.task-type-tag.main{background:rgba(255,158,196,.2);color:var(--c-warn)}
+.task-type-tag.side{background:rgba(255,133,162,.2);color:var(--c-blue)}
+.task-type-tag.daily{background:rgba(255,182,217,.2);color:var(--c-safe)}
+.task-type-tag.hidden_t{background:rgba(255,20,147,.2);color:var(--c-pink)}
+.task-diff-tag{font-size:var(--fs-xs);padding:1px 5px;border-radius:5px;font-weight:700}
+.task-diff-tag.d-d{background:rgba(200,200,200,.15);color:#ccc}
+.task-diff-tag.d-c{background:rgba(180,200,220,.15);color:#b4c8dc}
+.task-diff-tag.d-b{background:rgba(150,180,200,.2);color:#96b4c8}
+.task-diff-tag.d-a{background:rgba(255,182,193,.2);color:var(--c-warn)}
+.task-diff-tag.d-s{background:rgba(255,158,196,.25);color:var(--c-orange)}
+.task-diff-tag.d-ss{background:rgba(255,107,138,.25);color:var(--c-danger)}
+.task-status-tag{font-size:var(--fs-xs);padding:1px 6px;border-radius:6px}
+.task-status-tag.todo{background:rgba(200,200,200,.15);color:#ccc}
+.task-status-tag.doing{background:rgba(133,162,255,.15);color:#85a2ff}
+.task-status-tag.done{background:rgba(120,200,130,.2);color:#78c882}
+.task-status-tag.failed{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.rule-card{background:rgba(255,192,203,.08);border:1px solid var(--c-border);border-radius:12px;padding:8px 10px;margin-bottom:6px}
+.rule-card.world{border-left:3px solid var(--c-blue)}
+.rule-card.school{border-left:3px solid var(--c-warn)}
+.rule-card h4{font-size:var(--fs-sm);color:var(--c-accent);margin-bottom:4px}
+.rule-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:var(--fs-xs);color:var(--c-dim)}
+.shop-quality{font-size:var(--fs-xs);padding:1px 5px;border-radius:5px;font-weight:700;margin-left:4px}
+.shop-quality.common{background:rgba(200,200,200,.15);color:#ccc}
+.shop-quality.fine{background:rgba(120,160,220,.2);color:#78a0dc}
+.shop-quality.rare{background:rgba(180,120,220,.2);color:#b478dc}
+.shop-quality.epic{background:rgba(255,158,96,.25);color:#ff9e60}
+.shop-quality.legend{background:rgba(255,200,80,.25);color:#ffc850}
+.shop-stock-tag{font-size:var(--fs-xs);padding:1px 5px;border-radius:5px}
+.shop-stock-tag.plenty{background:rgba(120,200,130,.2);color:#78c882}
+.shop-stock-tag.tight{background:rgba(255,200,80,.2);color:#ffc850}
+.shop-stock-tag.low{background:rgba(255,158,96,.2);color:#ff9e60}
+.shop-stock-tag.none{background:rgba(200,200,200,.15);color:#999}
+.env-card{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:12px;padding:8px 10px;margin-bottom:6px}
+.env-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-top:4px}
+.env-item{background:rgba(255,182,193,.1);border-radius:8px;padding:4px 8px;font-size:var(--fs-xs)}
+.env-item .k{color:var(--c-dim)}.env-item .v{color:var(--c-accent);font-weight:600}
+.radar-signal{display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:10px;margin-bottom:4px}
+.radar-type{font-size:var(--fs-xs);padding:1px 6px;border-radius:6px;font-weight:700;white-space:nowrap}
+.radar-type.machine{background:rgba(255,158,96,.2);color:var(--c-orange)}
+.radar-type.person{background:rgba(255,133,162,.2);color:var(--c-blue)}
+.radar-type.ship{background:rgba(180,120,220,.2);color:#b478dc}
+.radar-type.base{background:rgba(255,182,217,.2);color:var(--c-safe)}
+.radar-strength{font-size:var(--fs-xs);padding:1px 5px;border-radius:5px;font-weight:700}
+.radar-strength.strong{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.radar-strength.medium{background:rgba(255,158,96,.2);color:var(--c-orange)}
+.radar-strength.weak{background:rgba(200,200,200,.15);color:#ccc}
+.radar-threat{font-size:var(--fs-xs);padding:1px 5px;border-radius:5px}
+.radar-threat.harmless{background:rgba(120,200,130,.2);color:#78c882}
+.radar-threat.suspicious{background:rgba(255,200,80,.2);color:#ffc850}
+.radar-threat.hostile{background:rgba(255,158,96,.2);color:var(--c-orange)}
+.radar-threat.extreme{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.radar-threat.unknown{background:rgba(200,200,200,.15);color:#999}
+.asset-section{margin-bottom:8px}
+.asset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
+.asset-card{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:10px;padding:6px 8px}
+.asset-card .name{font-weight:600;font-size:var(--fs-sm);color:var(--c-accent)}
+.asset-card .qty{font-size:var(--fs-xs);color:var(--c-dim);float:right}
+.asset-card .meta{font-size:var(--fs-xs);color:var(--c-dim);margin-top:2px}
+.craft-layout{display:flex;gap:8px;flex-wrap:wrap}
+.craft-list{flex:1;min-width:200px}
+.craft-detail{flex:1;min-width:200px}
+.craft-recipe{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:10px;padding:6px 8px;margin-bottom:4px;cursor:pointer}
+.craft-recipe.active{border-color:var(--c-accent);background:rgba(255,105,180,.15)}
+.craft-search{width:100%;padding:6px 8px;background:rgba(255,192,203,.12);border:1px solid var(--c-border);border-radius:10px;color:var(--c-text);font-size:var(--fs-sm);margin-bottom:6px;font-family:var(--font)}
+.craft-search::placeholder{color:var(--c-dim)}
+.craft-mat{display:flex;justify-content:space-between;font-size:var(--fs-xs);padding:2px 0}
+.craft-mat .ok{color:#78c882}.craft-mat .no{color:var(--c-danger)}
+.craft-diff{background:rgba(255,182,193,.08);border-radius:8px;padding:6px;margin:4px 0}
+.craft-diff-row{display:flex;justify-content:space-between;font-size:var(--fs-xs);padding:1px 0}
+.craft-diff-row .before{color:var(--c-dim);text-decoration:line-through}
+.craft-diff-row .after{color:var(--c-safe);font-weight:600}
+.craft-flash{animation:craftFlash .6s ease}
+@keyframes craftFlash{0%{background:rgba(120,200,130,.3)}100%{background:transparent}}
+.vehicle-card,.residence-card{background:rgba(255,192,203,.1);border:1px solid var(--c-border);border-radius:12px;padding:8px 10px;margin-bottom:6px}
+.vehicle-status{font-size:var(--fs-xs);padding:1px 6px;border-radius:6px;font-weight:700}
+.vehicle-status.parked{background:rgba(133,162,255,.15);color:#85a2ff}
+.vehicle-status.moving{background:rgba(120,200,130,.2);color:#78c882}
+.vehicle-status.repair{background:rgba(255,200,80,.2);color:#ffc850}
+.vehicle-status.damaged{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.sub-card{background:rgba(255,182,193,.08);border:1px solid rgba(255,182,193,.2);border-radius:8px;padding:5px 8px;margin:4px 0;font-size:var(--fs-xs)}
+@media(max-width:480px){.g{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:repeat(2,1fr)}.hd-t{font-size:var(--fs-sm)}.hd-l{width:100%}.sb-nav button{padding:6px 2px;font-size:10px}.skill-card{padding:6px 8px}}
+@media(max-width:360px){.g{grid-template-columns:1fr}.g2{grid-template-columns:1fr}.sb-nav button{padding:4px 1px;font-size:9px}}
+</style>
+</head>
+<body>
+<div id="sb-root">
+  <div class="loading" id="sb-loading">✦ 星月状态栏加载中 …</div>
+  <div class="sb" id="sb-body" style="display:none">
+    <div class="sb-pages">
+      <div class="sb-page" id="page-status" data-page="status"></div>
+      <div class="sb-page" id="page-env" data-page="env" style="display:none"></div>
+      <div class="sb-page" id="page-characters" data-page="characters" style="display:none"></div>
+      <div class="sb-page" id="page-skills" data-page="skills" style="display:none"></div>
+      <div class="sb-page" id="page-radar" data-page="radar" style="display:none"></div>
+      <div class="sb-page" id="page-events" data-page="events" style="display:none"></div>
+      <div class="sb-page" id="page-tasks" data-page="tasks" style="display:none"></div>
+      <div class="sb-page" id="page-rules" data-page="rules" style="display:none"></div>
+      <div class="sb-page" id="page-assets" data-page="assets" style="display:none"></div>
+      <div class="sb-page" id="page-crafting" data-page="crafting" style="display:none"></div>
+      <div class="sb-page" id="page-vehicle" data-page="vehicle" style="display:none"></div>
+      <div class="sb-page" id="page-residence" data-page="residence" style="display:none"></div>
+      <div class="sb-page" id="page-shop" data-page="shop" style="display:none"></div>
+      <div class="sb-page" id="page-settings" data-page="settings" style="display:none"></div>
+    </div>
+    <div class="sb-nav">
+      <button data-page="status" class="active">📊状态</button>
+      <button data-page="env">🌍环境</button>
+      <button data-page="characters">👥角色</button>
+      <button data-page="skills">🏅技能</button>
+      <button data-page="radar">📡雷达</button>
+      <button data-page="events">📅事件</button>
+      <button data-page="tasks">📜任务</button>
+      <button data-page="rules">📐规则</button>
+      <button data-page="assets">🎒资产</button>
+      <button data-page="crafting">🔨制造</button>
+      <button data-page="vehicle">🚗载具</button>
+      <button data-page="residence">🏠居所</button>
+      <button data-page="shop">🛒商店</button>
+      <button data-page="settings">⚙设置</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+<script type="application/json" id="mvu-stat-embed">{{format_message_variable::stat_data}}</script>
+<script>
+var TH_HOSTS=[window,window.parent,window.top].filter(function(w,i,arr){return w&&arr.indexOf(w)===i});
+function pickHostValue(name){if(window[name]!==undefined)return window[name];for(var i=0;i<TH_HOSTS.length;i++){try{if(TH_HOSTS[i][name]!==undefined)return TH_HOSTS[i][name]}catch(e){}}return undefined}
+function getMvu(){return pickHostValue('Mvu')||window.Mvu||null}
+function parseEmbeddedStat(){var el=document.getElementById('mvu-stat-embed');if(!el)return null;var raw=(el.textContent||el.innerText||'').trim();if(!raw||raw.indexOf('format_message_variable')>=0)return null;try{var parsed=JSON.parse(raw);if(parsed&&typeof parsed==='object'){if(parsed.stat_data&&typeof parsed.stat_data==='object')return parsed.stat_data;return parsed}}catch(e){}return null}
+function hasData(o){return o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length>0}
+function resolveMessageIdFromDom(){try{var frame=window.frameElement;if(frame&&frame.closest){var mes=frame.closest('.mes');if(mes){var id=parseInt(mes.getAttribute('mesid'),10);if(id>=0)return id}}var el=frame;while(el){if(el.classList&&el.classList.contains('mes')){var id2=parseInt(el.getAttribute('mesid'),10);if(id2>=0)return id2}el=el.parentElement}}catch(e){}return -1}
+function resolveMessageIdFromIframeName(){var fn=pickHostValue('getIframeName');if(typeof fn==='function'){try{var name=String(fn()||'');var m=/^TH-message--(\d+)--/.exec(name);if(m)return parseInt(m[1],10)}catch(e){}}return -1}
+function resolveMessageId(){var fromDom=resolveMessageIdFromDom();if(fromDom>=0)return fromDom;var fromName=resolveMessageIdFromIframeName();if(fromName>=0)return fromName;if(typeof window.message_id==='number'&&window.message_id>=0)return window.message_id;var fn=pickHostValue('getCurrentMessageId');if(typeof fn==='function'){try{return fn()}catch(e){}}return -1}
+function getMessageOption(){var messageId=resolveMessageId();return{type:'message',message_id:messageId>=0?messageId:'latest'}}
+function pickStatData(source){if(!source||typeof source!=='object')return null;var stat=source.stat_data;return hasData(stat)?stat:null}
+var cachedStatFromBridge=null;
+function readStatDataSync(){var embedded=parseEmbeddedStat();if(embedded)return deepMergeStat(DEFAULT_STAT,embedded);if(cachedStatFromBridge&&hasData(cachedStatFromBridge))return deepMergeStat(DEFAULT_STAT,cachedStatFromBridge);return deepMergeStat(DEFAULT_STAT,{})}
+async function readStatDataAsync(){try{if(typeof getLastMessageId==='function'){var maxId=getLastMessageId();var Mvu=getMvu();var gv=pickHostValue('getVariables');for(var i=0;i<15;i++){var cid=maxId-i;if(cid<0)break;var msg=null;try{msg=getChatMessages(cid)}catch(e){continue}if(Array.isArray(msg))msg=msg[0];if(!msg||msg.role!=='assistant')continue;var mid=msg.message_id;if(typeof mid!=='number'||mid<0)continue;var v=null;try{if(Mvu&&typeof Mvu.getMvuData==='function'){v=await Mvu.getMvuData({type:'message',message_id:mid})}else if(gv){v=await gv({type:'message',message_id:mid})}}catch(e){}var stat=pickStatData(v);if(stat&&hasData(stat))return deepMergeStat(DEFAULT_STAT,stat)}}}catch(e){}var embedded=parseEmbeddedStat();if(embedded)return deepMergeStat(DEFAULT_STAT,embedded);return deepMergeStat(DEFAULT_STAT,{})}
+function requestStatFromBridge(){var mesId=resolveMessageId();var payload={type:'fjb-mvu-stat-request',messageId:mesId};var origin=window.location.origin||'*';for(var i=0;i<TH_HOSTS.length;i++){try{TH_HOSTS[i].postMessage(payload,origin)}catch(e){}}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function num(v,d){v=parseFloat(v);d=(d===undefined)?0:d;return isNaN(v)?d:v}
+function pct(v,max){v=num(v,0);max=num(max,100);return Math.max(0,Math.min(100,max>0?(v/max)*100:0))}
+function barClass4(v){v=parseInt(v)||0;if(v>=80)return'g';if(v>=60)return'y';if(v>=30)return'o';return'r'}
+function barClass5(v){v=parseInt(v)||0;if(v>=80)return'g';if(v>=60)return'b';if(v>=40)return'y';if(v>=20)return'o';return'r'}
+function kv(k,v,cls){return '<div class="kv"><span class="k">'+k+'</span><span class="v'+(cls?' '+cls:'')+'">'+esc(v)+'</span></div>'}
+function bar(label,val,max,cls){max=max||100;var v=num(val,0);cls=cls||barClass4;return '<div class="bar"><div class="bar-h"><span>'+label+'</span><span class="bv">'+v+'/'+max+'</span></div><div class="bar-t"><div class="bar-f '+cls(v)+'" style="width:'+pct(v,max)+'%"></div></div></div>'}
+
+var DEFAULT_STAT={basic:{name:"玩家",gender:"男",age:18,school:"私立星月女子学院",grade_class:"高三2班"},time:{day:1,hour:8,weekday:"周一",date_str:"09-01 周一",semester_day:1},stats:{energy:80,energy_max:80,sanity:80,health:75,stress:10,suspicion:0,corruption:0,money:500,difficulty:"困难",stamina:80},skills:{meditation:{level:2,exp:0,daily_used:0,daily_max:50},exercise:{level:1,exp:0,daily_used:0,daily_max:40},insight:{level:1,exp:0,daily_used:0,daily_max:40},disguise:{level:1,exp:0,daily_used:0,daily_max:30},recovery:{level:1,exp:0,daily_used:0,daily_max:30},willpower:{level:1,exp:0,daily_used:0,daily_max:30}},use_stage:{current:1,total_uses:0,today_uses:0,last_use_day:0,stage_progress:0},academic:{score:75,stage:3,study_count_today:0,exam_countdown:126,teacher_attention:0},_symptoms:{fatigue_desc:"暂无异常",sensitivity_desc:"暂无异常",appearance_desc:"气色正常",sanity_desc:"情绪稳定"},_check_suggestions:[],tasks:[],rule_changes:{world_changes:[],school_changes:[]}};
+
+function deepMergeStat(dst,src){if(!src||typeof src!=='object')return dst;var out={};try{out=JSON.parse(JSON.stringify(dst||{}))}catch(e){out={}}for(var k in src){if(!Object.prototype.hasOwnProperty.call(src,k))continue;var sv=src[k],dv=out[k];if(sv&&typeof sv==='object'&&!Array.isArray(sv)&&dv&&typeof dv==='object'&&!Array.isArray(dv)){out[k]=deepMergeStat(dv,sv)}else{out[k]=sv}}return out}
+function mvuObj(key,sub){var o=DEFAULT_STAT;try{o=State.mvu||DEFAULT_STAT}catch(e){}if(!o||typeof o!=='object')o=DEFAULT_STAT;var v=o[key];if(v&&typeof v==='object'&&sub!==undefined)v=v[sub];return v||{}}
+var State={loading:true,refreshing:false,mvu:{},expanded:{}};
+var currentPage='status';
+var currentTheme='pink';
+var currentEventFilter='all';
+var THEMES={pink:{'--c-accent':'#ff69b4','--c-pink':'#ff1493','--c-danger':'#ff6b8a','--c-warn':'#ff9ec4','--c-orange':'#ff85a2','--c-safe':'#ffb6d9','--c-blue':'#ff85a2','--c-silver':'#ffc0cb'},purple:{'--c-accent':'#9b59b6','--c-pink':'#8e44ad','--c-danger':'#9b59b6','--c-warn':'#b388d1','--c-orange':'#a569bd','--c-safe':'#c39bd3','--c-blue':'#a569bd','--c-silver':'#d2b4de'},dark:{'--c-accent':'#e74c3c','--c-pink':'#c0392b','--c-danger':'#e74c3c','--c-warn':'#f39c12','--c-orange':'#e67e22','--c-safe':'#2ecc71','--c-blue':'#3498db','--c-silver':'#95a5a6'}};
+function cardTitle(cls,icon,text,key){var open=State.expanded[key]?' open':'';return '<details class="block"'+open+' data-key="'+key+'"><summary class="card-t '+cls+'">'+icon+' '+text+'<span class="caret">▶</span></summary><div class="block-body">'}
+
+function renderHeader(){var t=mvuObj('time'),s=mvuObj('stats'),us=mvuObj('use_stage'),ac=mvuObj('academic'),sy=mvuObj('_symptoms');var diff=s.difficulty||'困难';var diffCls=diff==='地狱'?'danger':(diff==='困难'?'warn':'safe');var sus=s.suspicion||0;var cor=s.corruption||0;var susCls=sus>=150?'danger':(sus>=70?'warn':'silver');var corCls=cor>=120?'danger':(cor>=60?'warn':'silver');var _h=Number(t.hour)||8;var _slot;if(_h>=5&&_h<7)_slot='早晨';else if(_h>=7&&_h<8)_slot='晨读';else if(_h>=8&&_h<12)_slot='上午';else if(_h>=12&&_h<14)_slot='中午';else if(_h>=14&&_h<17)_slot='下午';else if(_h>=17&&_h<19)_slot='傍晚';else if(_h>=19&&_h<22)_slot='晚自习';else if(_h>=22||_h<2)_slot='夜里';else _slot='半夜';return '<div class="hd"><div class="hd-l"><span class="hd-t">✦ 星月女子学院</span><span class="pill">Day '+esc(t.day||1)+'</span><span class="pill">'+esc(t.date_str||'')+' '+esc(t.weekday||'')+'</span><span class="pill safe">'+esc(_slot)+' '+esc(t.hour||8)+':00</span><span class="pill '+diffCls+'">'+esc(diff)+'</span><span class="pill '+susCls+'">🔍 '+esc(sus)+'/200</span><span class="pill '+corCls+'">🌑 '+esc(cor)+'/200</span><span class="pill warn">💰 '+esc(s.money||0)+'元</span><span class="pill warn">📚 距高考 '+esc(ac.exam_countdown||126)+'天</span><span class="hd-sub">学业 '+esc(ac.score||75)+' ('+esc(ac.stage||3)+'/5) · 使用阶段 '+esc(us.current||1)+'/5</span></div><button class="rfr'+(State.refreshing?' spinning':'')+'" data-act="refresh">✦</button></div>'+bar('精力 '+esc(s.energy||0)+'/'+esc(s.energy_max||80),s.energy||0,s.energy_max||80,barClass4)+bar('理智',s.sanity||0,100,barClass5)+bar('疑心',s.suspicion||0,200,barClass4)+bar('沉沦',s.corruption||0,200,barClass4)+bar('体力',s.stamina||0,100,barClass4)+'<div class="g" style="margin-top:4px">'+kv('健康',s.health||0)+(s.stress>50?'<span class="v warn">压力:'+esc(s.stress)+'</span>':'<span>压力:'+esc(s.stress)+'</span>')+kv('距高考',(ac.exam_countdown||126)+'天','warn')+'</div>'+'<div style="font-size:var(--fs-xs);color:var(--c-dim);margin-top:4px">'+esc(sy.fatigue_desc||'')+' · '+esc(sy.sanity_desc||'')+'</div>'}
+
+function renderSymptoms(){var sy=mvuObj('_symptoms');return cardTitle('symptom','📋','当前症状','symptom')+'<div class="g2">'+kv('身体感受',sy.fatigue_desc||'暂无')+kv('异常感知',sy.sensitivity_desc||'暂无')+kv('外人看来',sy.appearance_desc||'正常')+kv('心理状态',sy.sanity_desc||'稳定')+'</div></div></details>'}
+
+function renderCheckSuggestions(){var cs=mvuObj('_check_suggestions');if(!Array.isArray(cs)||cs.length===0)return '';var body='';cs.forEach(function(item,idx){if(!item||!item.display_text)return;body+='<div class="heroine-item" style="cursor:default"><div class="heroine-row"><span class="heroine-name" style="color:var(--c-silver)">'+(idx+1)+'. '+esc(item.display_text)+'</span></div>';if(item.dice_command){body+='<div class="heroine-stats"><span>指令: '+esc(item.dice_command)+'</span></div>'}body+='</div>'});if(!body)return '';return cardTitle('event','🎲','检定建议 ('+cs.length+')','checkSuggestions')+body+'</div></details>'}
+
+function skillTier(lv){lv=parseInt(lv)||1;if(lv>=81)return '大师';if(lv>=61)return '高级';if(lv>=41)return '中级';if(lv>=21)return '初级';return '入门'}
+function skillTierCls(lv){lv=parseInt(lv)||1;if(lv>=81)return 'tg';if(lv>=61)return 'tb';if(lv>=41)return 'ty';if(lv>=21)return 'to';return 'tr'}
+function skillBarCls(lv){lv=parseInt(lv)||1;if(lv>=81)return 'g';if(lv>=61)return 'b';if(lv>=41)return 'y';if(lv>=21)return 'o';return 'r'}
+function nextTierInfo(lv){lv=parseInt(lv)||1;if(lv>=81)return '已满级';if(lv>=61)return '→ 大师 (Lv.81+)';if(lv>=41)return '→ 高级 (Lv.61+)';if(lv>=21)return '→ 中级 (Lv.41+)';return '→ 初级 (Lv.21+)'}
+
+function renderPageStatus(){return renderHeader()+renderRadarSVG()+renderSymptoms()+renderCheckSuggestions()}
+
+function renderPageCharacters(){var fu=mvuObj('female_users');var keys=Object.keys(fu).filter(function(k){return k&&fu[k]&&fu[k].basic&&fu[k].basic.name});var body='';if(keys.length===0){body='<div class="empty-state">暂无女性数据</div>'}else{for(var i=0;i<keys.length;i++){var h=fu[keys[i]];if(!h||!h.basic)continue;var name=h.basic.name||'--';var role=h.basic.role||'--';var fav=h.with_player?h.with_player.favorability||0:0;var stage=h.stage_trajectory?h.stage_trajectory.current_stage||1:1;var bodyT=h.body?h.body.body_type||'':'';var cup=h.body?h.body.breast_cup||'':'';body+='<div class="heroine-item" data-act="heroine-detail" data-key="'+esc(keys[i])+'"><div class="heroine-row"><span class="heroine-name">'+esc(name)+'</span><span class="heroine-role">'+esc(role)+'</span></div><div class="heroine-stats"><span>好感:'+fav+'</span><span>阶段:'+stage+'/10</span><span>'+esc(bodyT)+' '+esc(cup)+'</span></div></div>'}}return body}
+
+function renderPageSkills(){var sk=mvuObj('skills');var defs=[{key:'meditation',name:'冥想',desc:'恢复理智，缓解精神压力'},{key:'exercise',name:'锻炼',desc:'提升体力，增强体魄'},{key:'insight',name:'洞察',desc:'观察细节，发现隐藏信息'},{key:'disguise',name:'伪装',desc:'隐藏真实想法与状态'},{key:'recovery',name:'恢复',desc:'快速恢复精力与体力'},{key:'willpower',name:'意志',desc:'抵抗精神侵蚀与诱惑'}];var body='';defs.forEach(function(d){var s=sk[d.key]||{};var lv=parseInt(s.level)||1;var ex=parseInt(s.exp)||0;var dm=parseInt(s.daily_max)||15;var du=parseInt(s.daily_used)||0;var expMax=100*(lv+1);var tier=skillTier(lv);var tierCls=skillTierCls(lv);var barCls=skillBarCls(lv);var nextT=nextTierInfo(lv);body+='<div class="skill-card"><div class="skill-head"><span class="skill-name">'+d.name+'</span><span class="skill-tier '+tierCls+'">'+tier+'</span></div><div class="skill-desc">'+d.desc+'</div><div class="bar-h"><span>Lv.'+lv+'</span><span class="bv">EXP '+ex+'/'+expMax+'</span></div><div class="bar-t"><div class="bar-f '+barCls+'" style="width:'+pct(ex,expMax)+'%"></div></div><div class="skill-foot"><span>今日 '+du+'/'+dm+'</span><span class="skill-next">'+nextT+'</span></div></div>'});return body}
+
+var EVENT_DISPLAY_LIMIT=20;
+function eventImportanceTag(imp){imp=Number(imp)||0;var cls,txt;if(imp>=80){cls='high';txt='★重要'}else if(imp>=50){cls='mid';txt='◆中等'}else{cls='low';txt='·一般'}return '<span class="event-importance '+cls+'">'+txt+'</span>'}
+function eventIdSortValue(id){id=String(id||'');var m=/(\d+)/.exec(id);return m?parseInt(m[1],10):0}
+function renderPageEvents(){var hidden=mvuObj('_hidden');var events=hidden.recent_events||[];if(!Array.isArray(events)||events.length===0){return '<div class="empty-state">暂无事件记录</div>'}var typeNames={use:'使用',symptom:'症状',investigate:'调查',social:'社交',exam:'考试',ending:'结局'};
+// 按 event id 数值降序排序
+var sorted=events.slice().sort(function(a,b){return eventIdSortValue(b.id)-eventIdSortValue(a.id)});
+// 类型筛选
+var filtered=sorted.filter(function(ev){if(currentEventFilter==='all')return true;return (ev.type||'unknown')===currentEventFilter});
+// 显示数量限制
+var limited=filtered.slice(0,EVENT_DISPLAY_LIMIT);
+var body='<div class="event-filter">';body+='<button class="filter-btn '+('all'===currentEventFilter?'active':'')+'" data-act="filter-event" data-val="all">全部</button>';Object.keys(typeNames).forEach(function(t){body+='<button class="filter-btn '+(t===currentEventFilter?'active':'')+'" data-act="filter-event" data-val="'+t+'">'+typeNames[t]+'</button>'});body+='</div>';
+if(filtered.length>EVENT_DISPLAY_LIMIT){body+='<div class="batch-bar"><span class="batch-info">显示最近 '+EVENT_DISPLAY_LIMIT+' 条 / 共 '+filtered.length+' 条</span></div>'}
+body+='<div class="event-timeline">';limited.forEach(function(ev,idx){var type=ev.type||'unknown';var typeText=typeNames[type]||type;var time=ev.time||ev.timestamp||ev.day||'第'+(idx+1)+'条';var desc=ev.description||ev.desc||ev.text||ev.title||'';var imp=ev.importance||ev.priority||0;var impact=ev.impact||'';var hooks=ev.hooks||ev.hook||'';var inner='<div class="event-row"><span class="event-type">'+esc(typeText)+'</span>'+eventImportanceTag(imp)+'<span class="event-time">'+esc(time)+'</span></div><div class="event-desc">'+esc(desc)+'</div>';var detail='';if(impact){detail+='<div><strong>影响:</strong> '+esc(impact)+'</div>'}if(hooks){detail+='<div><strong>后续钩子:</strong> '+esc(hooks)+'</div>'}body+=renderRecordItem('events',ev.id||('ev_'+idx),inner,detail)});body+='</div>';return body}
+
+function renderPageShop(){var s=mvuObj('stats'),t=mvuObj('time'),fu=mvuObj('female_users');var money=Number(s.money)||0;var hour=Number(t.hour)||8;var timeSlot;var _ts=hour;if(_ts>=5&&_ts<7)timeSlot='早晨';else if(_ts>=7&&_ts<8)timeSlot='晨读';else if(_ts>=8&&_ts<12)timeSlot='上午';else if(_ts>=12&&_ts<14)timeSlot='中午';else if(_ts>=14&&_ts<17)timeSlot='下午';else if(_ts>=17&&_ts<19)timeSlot='傍晚';else if(_ts>=19&&_ts<22)timeSlot='晚自习';else if(_ts>=22||_ts<2)timeSlot='夜里';else timeSlot='半夜';var fu014=fu.female_user_014||{};var nar=fu014.narrative||{};var shenPresent=(nar.presence_status==='在场');var dailyPurchases=s.daily_purchases||{};var shopGoods=mvuObj('shop_goods');var hasDynamicShop=Array.isArray(shopGoods)&&shopGoods.length>0;
+// 品质色阶
+function qualityTag(q){var map={common:'普通',fine:'优良',rare:'稀有',epic:'史诗',legend:'传说'};var cls=q||'common';var name=map[cls]||'普通';return '<span class="shop-quality '+cls+'">'+name+'</span>'}
+// 库存色阶
+function stockTag(stock,max){stock=Number(stock)||0;max=Number(max)||0;var cls,txt;if(max<=0){cls='none';txt='已售罄'}else if(stock<=0){cls='none';txt='售罄'}else if(stock<=max*0.2){cls='low';txt='即将售罄'}else if(stock<=max*0.5){cls='tight';txt='紧俏'}else{cls='plenty';txt='充足'}return '<span class="shop-stock-tag '+cls+'">'+txt+'</span>'}
+var body='';
+// 动态商品（MVU变量驱动）优先
+if(hasDynamicShop){body+='<div class="sect-title">商贸货物 (动态)</div>';shopGoods.forEach(function(g){var id=g.id||g.name;var name=g.name||'未知';var price=Number(g.price)||0;var quality=g.quality||'common';var stock=Number(g.stock);var stockMax=Number(g.stock_max)||0;var desc=g.description||g.effect||'';var loc=g.location||'';var limit=g.limit||'';var dailyUsed=dailyPurchases[id]||0;var affordable=money>=price;var limitOk=!limit||limit==='无限购'||dailyUsed===0;var stockOk=isNaN(stock)?true:stock>0;var available=limitOk&&stockOk;var status;if(!stockOk){status='已售罄'}else if(!limitOk){status='今日已购'}else if(!affordable){status='还差 '+(price-money)+' 元'}else{status='可购买'}var cls=(!available||!affordable)?'disabled':'buyable';body+='<div class="heroine-item shop-item '+cls+'" data-item="'+esc(id)+'" data-price="'+price+'" data-name="'+esc(name)+'">';body+='<div class="heroine-row"><span class="heroine-name">'+esc(name)+qualityTag(quality)+'</span><span class="heroine-stat">'+price+'元</span></div>';if(desc){body+='<div class="heroine-stats"><span>效果: '+esc(desc)+'</span></div>'}body+='<div class="heroine-stats"><span>地点: '+esc(loc)+'</span><span>限购: '+esc(limit||'无限')+'</span>'+stockTag(stock,stockMax)+'</div>';body+='<div class="shop-status '+cls+'">'+status+'</div>';body+='</div>'})}
+// 静态默认商品（兜底，无动态商品时显示）
+body+='<div class="sect-title">校园补给</div>';var supplies=[{id:'meal',name:'营养餐（食堂）',price:20,effects:'energy+15, stamina+10',limit:'无限购',location:'食堂',time_restriction:(hour>=5&&hour<=8)||(hour>=12&&hour<=14)||(hour>=17&&hour<=20)},{id:'drink',name:'功能饮料（小卖部）',price:15,effects:'energy+10, stamina+5',limit:'每日限1次',location:'小卖部',time_restriction:true},{id:'vitamin',name:'维生素片（小卖部）',price:30,effects:'energy+20, stamina+15',limit:'每日限1次',location:'小卖部',time_restriction:true},{id:'sleep_pill',name:'安眠药（校医室）',price:25,effects:'sanity+15, energy+10',limit:'夜间使用',location:'校医室',time_restriction:hour>=22||hour<5},{id:'supplement',name:'高级补剂（校医室）',price:80,effects:'energy+40, stamina+30, sanity+10',limit:'每日限1次',location:'校医室',time_restriction:true},{id:'herbal',name:'特制药膳（校医室）',price:150,effects:'全属性+20',limit:'每日限1次',location:'校医室',time_restriction:true}];supplies.forEach(function(sp){var dailyUsed=dailyPurchases[sp.id]||0;var affordable=money>=sp.price;var shenOk=sp.location!=='校医室'||shenPresent;var timeOk=sp.time_restriction;var limitOk=sp.limit==='无限购'||dailyUsed===0;var available=timeOk&&shenOk&&limitOk;var status;if(!shenOk){status='需沈雨桐在场'}else if(!timeOk){if(sp.id==='meal'){status='需三餐时段'}else if(sp.id==='sleep_pill'){status='需夜间(22:00后)'}else{status='时段不符'}}else if(!limitOk){status='今日已购'}else if(!affordable){status='还差 '+(sp.price-money)+' 元'}else{status='可购买'}var cls=(!available||!affordable)?'disabled':'buyable';body+='<div class="heroine-item shop-item '+cls+'" data-item="'+esc(sp.id)+'" data-price="'+sp.price+'" data-name="'+esc(sp.name)+'">';body+='<div class="heroine-row"><span class="heroine-name">'+esc(sp.name)+'</span><span class="heroine-stat">'+sp.price+'元</span></div>';body+='<div class="heroine-stats"><span>效果: '+esc(sp.effects)+'</span><span>地点: '+esc(sp.location)+'</span><span>限购: '+esc(sp.limit)+'</span></div>';body+='<div class="shop-status '+cls+'">'+status+'</div>';body+='</div>'});return body}
+
+// ===== P0-3: SVG 属性雷达图（六维） =====
+function renderRadarSVG(){var sk=mvuObj('skills');var vals=[num(sk.meditation&&sk.meditation.level,1),num(sk.exercise&&sk.exercise.level,1),num(sk.insight&&sk.insight.level,1),num(sk.disguise&&sk.disguise.level,1),num(sk.recovery&&sk.recovery.level,1),num(sk.willpower&&sk.willpower.level,1)];var labels=['冥想','锻炼','洞察','伪装','恢复','意志'];var max=100;var cx=100,cy=100,r=70;var pts=[];var dots=[];var grid=[];for(var ring=1;ring<=4;ring++){var rr=r*ring/4;var gp=[];for(var i=0;i<6;i++){var ang=-Math.PI/2+i*Math.PI/3;gp.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1))}grid.push('<polygon class="grid" points="'+gp.join(' ')+'" fill="none" stroke="rgba(255,182,193,.2)" stroke-width=".5"/>')}for(var j=0;j<6;j++){var ang2=-Math.PI/2+j*Math.PI/3;var rv=Math.max(0,Math.min(max,vals[j]));var rr2=r*rv/max;var x=cx+rr2*Math.cos(ang2);var y=cy+rr2*Math.sin(ang2);pts.push(x.toFixed(1)+','+y.toFixed(1));dots.push('<circle class="dot" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.5"/>')}var spokes='';for(var k=0;k<6;k++){var ang3=-Math.PI/2+k*Math.PI/3;var x2=cx+r*Math.cos(ang3);var y2=cy+r*Math.sin(ang3);spokes+='<line class="grid" x1="'+cx+'" y1="'+cy+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';var lx=cx+(r+12)*Math.cos(ang3);var ly=cy+(r+12)*Math.sin(ang3);spokes+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'">'+labels[k]+' '+vals[j]+'</text>'}return '<svg class="radar-svg" viewBox="0 0 200 200">'+grid.join('')+spokes+'<polygon class="data" points="'+pts.join(' ')+'"/>'+dots.join('')+'</svg>'}
+
+// ===== P0-1: 通用记录渲染器（展开/折叠 + 批量删除） =====
+var batchSelectMode=false;var batchSelected={};
+function renderBatchBar(category,label){var count=batchSelected[category]?Object.keys(batchSelected[category]).filter(function(k){return batchSelected[category][k]}).length:0;return '<div class="batch-bar"><span class="batch-info">'+(batchSelectMode?'已选 '+count+' 条':'共 '+label+' 条')+'</span><div><button class="batch-btn" data-act="toggle-batch" data-cat="'+category+'">'+(batchSelectMode?'退出选择':'批量选择')+'</button>'+(batchSelectMode?'<button class="batch-btn danger" data-act="batch-delete" data-cat="'+category+'">删除选中</button>':'')+'</div></div>'}
+function renderRecordItem(category,id,innerHtml,detailHtml){var checked=batchSelectMode&&batchSelected[category]&&batchSelected[category][id]?'checked':'';var check=batchSelectMode?'<input type="checkbox" class="batch-check" data-act="batch-check" data-cat="'+category+'" data-id="'+esc(id)+'" '+checked+'>':'';var expandBtn=detailHtml?'<button class="rec-expand-btn" data-act="toggle-detail" data-id="'+esc(id)+'">展开</button>':'';return '<div class="heroine-item record-item">'+check+innerHtml+expandBtn+(detailHtml?'<div class="rec-detail" id="detail-'+esc(id)+'">'+detailHtml+'</div>':'')+'</div>'}
+
+// ===== P1-1: 任务 tab =====
+function taskTypeTag(t){var map={main:'主线',side:'支线',daily:'日常',hidden_t:'隐藏'};var cls=t||'daily';return '<span class="task-type-tag '+cls+'">'+(map[cls]||t||'日常')+'</span>'}
+function taskDiffTag(d){var map={D:'d-d',C:'d-c',B:'d-b',A:'d-a',S:'d-s',SS:'d-ss'};var cls=map[d]||'d-d';return '<span class="task-diff-tag '+cls+'">'+(d||'D')+'</span>'}
+function taskStatusTag(s){var map={todo:'未接取',doing:'进行中',done:'已完成',failed:'已失败'};var cls=s||'todo';return '<span class="task-status-tag '+cls+'">'+(map[cls]||s||'未接取')+'</span>'}
+function renderPageTasks(){var tasks=mvuObj('tasks');if(!Array.isArray(tasks)||tasks.length===0){return '<div class="empty-state">暂无任务记录</div>'}var body=renderBatchBar('tasks',tasks.length+' 个任务');tasks.forEach(function(tk,idx){var id=tk.id||('task_'+idx);var type=tk.type||'daily';var diff=tk.difficulty||'D';var status=tk.status||'todo';var title=tk.title||tk.description||'未命名任务';var desc=tk.description||tk.desc||'';var progress=tk.progress||'';var reward=tk.reward||'';var deadline=tk.deadline||'';var stage=tk.stage||'';var cls=type;var inner='<div class="heroine-row"><span class="heroine-name">'+esc(title)+'</span>'+taskTypeTag(type)+taskDiffTag(diff)+taskStatusTag(status)+'</div><div class="heroine-stats"><span>'+esc(progress?('进度: '+progress):'')+'</span><span>'+esc(deadline?('截止: '+deadline):'')+'</span></div>';var detail='';if(desc){detail+='<div><strong>描述:</strong> '+esc(desc)+'</div>'}if(stage){detail+='<div><strong>当前阶段:</strong> '+esc(stage)+'</div>'}if(reward){detail+='<div><strong>奖励:</strong> '+esc(reward)+'</div>'}body+=renderRecordItem('tasks',id,inner,detail)});return body}
+
+// ===== P1-2: 规则变化 tab =====
+function renderPageRules(){var rc=mvuObj('rule_changes');var world=rc.world_changes||[];var school=rc.school_changes||[];var body='';if(!Array.isArray(world)||world.length===0){body+='<div class="empty-state">暂无世界变化记录</div>'}else{body+='<div class="sect-title">◆ 世界变化 ('+world.length+')</div>';body+=renderBatchBar('world',world.length+' 条');world.forEach(function(w,idx){var id=w.id||('world_'+idx);var title=w.title||w.rule||'未知变化';var content=w.content||w.rule||'';var scope=w.scope||'';var target=w.target||'';var strength=w.strength||'';var source=w.source||'';var expire=w.expire||'';var note=w.note||'';var inner='<div class="heroine-row"><span class="heroine-name">'+esc(title)+'</span></div>';var detail='';if(content){detail+='<div><strong>内容:</strong> '+esc(content)+'</div>'}if(scope){detail+='<div><strong>范围:</strong> '+esc(scope)+'</div>'}if(target){detail+='<div><strong>对象:</strong> '+esc(target)+'</div>'}if(strength){detail+='<div><strong>强度:</strong> '+esc(strength)+'</div>'}if(source){detail+='<div><strong>来源:</strong> '+esc(source)+'</div>'}if(expire){detail+='<div><strong>期限:</strong> '+esc(expire)+'</div>'}if(note){detail+='<div><strong>备注:</strong> '+esc(note)+'</div>'}body+='<div class="rule-card world">'+renderRecordItem('world',id,inner,detail)+'</div>'})}if(!Array.isArray(school)||school.length===0){body+='<div class="empty-state">暂无校规变化记录</div>'}else{body+='<div class="sect-title">■ 校规变化 ('+school.length+')</div>';body+=renderBatchBar('school',school.length+' 条');school.forEach(function(sc,idx){var id=sc.id||('school_'+idx);var title=sc.title||sc.rule||'未知校规';var content=sc.content||sc.rule||'';var target=sc.target||'';var scope=sc.scope||'';var reward=sc.reward||sc.reward_punishment||'';var source=sc.source||'';var inner='<div class="heroine-row"><span class="heroine-name">'+esc(title)+'</span></div>';var detail='';if(content){detail+='<div><strong>内容:</strong> '+esc(content)+'</div>'}if(target){detail+='<div><strong>对象:</strong> '+esc(target)+'</div>'}if(scope){detail+='<strong>范围:</strong> '+esc(scope)+'<br>'}if(reward){detail+='<div><strong>奖惩:</strong> '+esc(reward)+'</div>'}if(source){detail+='<div><strong>来源:</strong> '+esc(source)+'</div>'}body+='<div class="rule-card school">'+renderRecordItem('school',id,inner,detail)+'</div>'})}return body}
+
+function renderPageSettings(){var s=mvuObj('stats');var diff=s.difficulty||'困难';var body='';body+='<div class="sect-title">难度切换</div><div class="g2">';['普通','困难','地狱'].forEach(function(d){body+='<button class="setting-btn '+(d===diff?'active':'')+'" data-act="set-difficulty" data-val="'+d+'">'+d+'</button>'});body+='</div>';body+='<div class="sect-title">状态栏主题</div><div class="g2">';[{id:'pink',name:'粉色'},{id:'purple',name:'紫色'},{id:'dark',name:'深色'}].forEach(function(th){body+='<button class="setting-btn '+(th.id===currentTheme?'active':'')+'" data-act="set-theme" data-val="'+th.id+'">'+th.name+'</button>'});body+='</div>';body+='<div class="sect-title">功能开关</div><div class="g2">';[{id:'floatball',name:'悬浮球'},{id:'opening',name:'开局页'},{id:'diy',name:'DIY'}].forEach(function(sw){body+='<label class="switch-label"><input type="checkbox" data-act="toggle-fn" data-val="'+sw.id+'"><span>'+sw.name+'</span></label>'});body+='</div>';body+='<div class="sect-title">关于</div><div style="font-size:var(--fs-xs);color:var(--c-dim);padding:6px 4px;line-height:1.6">星月女子学院 RPG 状态栏 · 多页面架构<br>当前主题：'+currentTheme+' · 当前难度：'+esc(diff)+'</div>';return body}
+
+function renderHeroineDetail(key){var fu=mvuObj('female_users');var h=fu[key];if(!h)return;var b=h.basic||{},bd=h.body||{},p=h.personality||{},ns=h.nsfw||{},wl=h.with_player||{},ab=h.abilities||{},uh=h.usage_habits||{},st=h.stage_trajectory||{},ci=h.cross_impact||{},ac=h.academic||{};var body='<div class="g2">'+kv('班级',b.grade_class||'')+kv('年龄',b.age||'')+kv('身高',bd.height||'')+'cm'+kv('胸围',bd.breast_cup||'')+'/'+(bd.breast_cm||'')+'</div>';if(p.surface_color||p.middle_color||p.deep_color){body+='<div class="sect-title">性格调色盘</div><div class="g2">'+kv('表面',p.surface_color||'')+kv('间色',p.middle_color||'')+kv('底色',p.deep_color||'')+'</div>'}body+='<div class="sect-title">好感与阶段</div><div class="g2">'+kv('好感',wl.favorability||0)+kv('熟稔',wl.familiarity||0)+kv('互动',wl.interaction_count||0)+kv('阶段',st.current_stage||1)+'/10'+kv('硬上限',st.hard_cap||10)+'</div>';if(ab.skill_level){body+='<div class="sect-title">能力 <span class="nsfw-tag">18+</span></div><div class="g">'+kv('技巧',ab.skill_level||0)+kv('隐蔽',ab.stealth||0)+kv('耐力',ab.endurance||0)+kv('控制',ab.control||0)+kv('诱惑',ab.temptation||0)+kv('欲望',ab.desire||0)+'</div>'}if(ns.sensitivity){body+='<div class="sect-title">身体 <span class="nsfw-tag">18+</span></div><div class="g2">'+kv('敏感度',ns.sensitivity||0)+kv('润滑度',ns.lubrication||0)+kv('高潮次数',(ns.dildo_exp?ns.dildo_exp.orgasm_count:0))+'</div>'}if(uh.preferred_time){body+='<div class="sect-title">使用习惯</div><div class="g2">'+kv('时间',uh.preferred_time||'')+kv('地点',uh.preferred_location||'')+kv('风格',uh.usage_style||'')+kv('道具',uh.special_props||'无')+'</div>'}if(ac.score){body+='<div class="sect-title">学业/职业</div><div class="g2">'+kv('成绩',ac.score||0)+kv('阶段',ac.stage||3)+'/5'+kv('职业表现',ac.performance||0)+'</div>'}var ms=h.multi_stage||{};if(ms.rationality!==undefined){body+='<div class="sect-title">多维状态</div><div class="g2">'+kv('综合阶段',ms.composite_stage||'A_理性期','accent')+kv('理性',ms.rationality,ms.rationality<50?'danger':'')+kv('痴迷',ms.obsession,ms.obsession>50?'warn':'')+kv('学业压力',ms.academic_pressure,ms.academic_pressure>80?'danger':'')+kv('逃离倾向',ms.escape_awareness,ms.escape_awareness>60?'warn':'')+kv('精神',ms.sanity,ms.sanity<50?'danger':'')+kv('技能',ms.skill_level,'')+'</div>'+bar('理性',ms.rationality||0,100,barClass4)+bar('痴迷',ms.obsession||0,100,barClass4)+bar('学业压力',ms.academic_pressure||0,100,barClass4)}var rp=h.reproduction||{};if(rp.cycle_day!==undefined){body+='<div class="sect-title">生理周期 <span class="nsfw-tag">18+</span></div><div class="g2">'+kv('周期日',rp.cycle_day+'/28','')+kv('阶段',rp.cycle_stage||'行经期',rp.cycle_stage==='排卵期'?'warn':'')+kv('怀孕',rp.pregnancy_state>0?rp.pregnancy_state+'日':'未孕',rp.pregnancy_state>0?'warn':'safe')+kv('怀孕阶段',rp.pregnancy_stage||'未孕',rp.pregnancy_stage!=='未孕'?'warn':'')+kv('分娩',rp.delivery_result||'未分娩',rp.delivery_result==='风险'?'danger':'')+kv('产后恢复',rp.postpartum_days>0?rp.postpartum_days+'日':'无','')+kv('子女数',rp.child_count||0,'')+'</div>'}body+=renderCrossImpact(ci);showModal(esc(b.name||key)+' · 详情',body)}
+
+function renderCrossImpact(ci){if(!ci||!ci.academic)return '';return '<div class="sect-title">交叉影响</div><div class="g2">'+kv('学业',ci.academic>0?'+'+ci.academic:ci.academic,ci.academic<0?'danger':'')+kv('纪律',ci.discipline>0?'+'+ci.discipline:ci.discipline,ci.discipline<0?'danger':'')+kv('经济',ci.economy>0?'+'+ci.economy:ci.economy,ci.economy<0?'warn':'')+kv('社交',ci.social>0?'+'+ci.social:ci.social,ci.social<0?'warn':'')+kv('精力消耗','-'+ci.energy_cost,'danger')+kv('理智消耗','-'+ci.sanity_cost,'warn')+'</div>'}
+
+function renderPageByName(page){if(page==='status')return renderPageStatus();if(page==='env')return renderPageEnv();if(page==='characters')return renderPageCharacters();if(page==='skills')return renderPageSkills();if(page==='radar')return renderPageRadar();if(page==='events')return renderPageEvents();if(page==='tasks')return renderPageTasks();if(page==='rules')return renderPageRules();if(page==='assets')return renderPageAssets();if(page==='crafting')return renderPageCrafting();if(page==='vehicle')return renderPageVehicle();if(page==='residence')return renderPageResidence();if(page==='shop')return renderPageShop();if(page==='settings')return renderPageSettings();return ''}
+
+// ===== 环境 tab =====
+function renderPageEnv(){var t=mvuObj('time'),s=mvuObj('stats');var env=mvuObj('environment')||{};var hour=Number(t.hour)||8;var ts;if(hour>=5&&hour<7)ts='早晨';else if(hour>=7&&hour<8)ts='晨读';else if(hour>=8&&hour<12)ts='上午';else if(hour>=12&&hour<14)ts='中午';else if(hour>=14&&hour<17)ts='下午';else if(hour>=17&&hour<19)ts='傍晚';else if(hour>=19&&hour<22)ts='晚自习';else if(hour>=22||hour<2)ts='夜里';else ts='半夜';var body='<div class="env-card"><div class="heroine-row"><span class="heroine-name">🌍 当前环境</span></div><div class="env-grid">';body+='<div class="env-item"><span class="k">日期</span> <span class="v">第'+(t.day||1)+'天</span></div>';body+='<div class="env-item"><span class="k">时段</span> <span class="v">'+ts+'</span></div>';body+='<div class="env-item"><span class="k">星期</span> <span class="v">'+(t.weekday||'周一')+'</span></div>';body+='<div class="env-item"><span class="k">距高考</span> <span class="v">'+(s.exam_countdown||126)+'天</span></div>';var weather=env.weather||env.weather_desc||'';if(weather){body+='<div class="env-item"><span class="k">天气</span> <span class="v">'+esc(weather)+'</span></div>'}var temp=env.temperature||env.temp||'';if(temp){body+='<div class="env-item"><span class="k">温度</span> <span class="v">'+esc(temp)+'</span></div>'}var loc=env.location||env.current_location||'';if(loc){body+='<div class="env-item"><span class="k">位置</span> <span class="v">'+esc(loc)+'</span></div>'}var humid=env.humidity||'';if(humid){body+='<div class="env-item"><span class="k">湿度</span> <span class="v">'+esc(humid)+'</span></div>'}body+='</div></div>';var activities=env.activities||[];if(Array.isArray(activities)&&activities.length>0){body+='<div class="sect-title">📋 近期活动 ('+activities.length+')</div>';body+=renderBatchBar('env_activities',activities.length+' 项');activities.forEach(function(a,idx){var id=a.id||('act_'+idx);var title=a.title||a.name||'未知活动';var deadline=a.deadline||a.time||'';var desc=a.description||a.desc||'';var inner='<div class="heroine-row"><span class="heroine-name">'+esc(title)+'</span>'+(deadline?'<span class="heroine-stat">'+esc(deadline)+'</span>':'')+'</div>';body+=renderRecordItem('env_activities',id,inner,desc?'<div>'+esc(desc)+'</div>':'')})}var news=env.news||[];if(Array.isArray(news)&&news.length>0){body+='<div class="sect-title">📢 近期新闻 ('+news.length+')</div>';body+=renderBatchBar('env_news',news.length+' 条');news.forEach(function(n,idx){var id=n.id||('news_'+idx);var title=n.title||n.headline||'未知新闻';var heat=n.heat||n.importance||0;var heatTag=heat>=80?'<span class="event-importance high">热议</span>':(heat>=50?'<span class="event-importance mid">关注</span>':'<span class="event-importance low">一般</span>');var content=n.content||n.summary||'';var inner='<div class="heroine-row"><span class="heroine-name">'+esc(title)+'</span>'+heatTag+'</div>';body+=renderRecordItem('env_news',id,inner,content?'<div>'+esc(content)+'</div>':'')})}if(!Array.isArray(activities)||activities.length===0){if(!Array.isArray(news)||news.length===0){body+='<div class="empty-state">暂无环境信息</div>'}}return body}
+
+// ===== 雷达 tab =====
+function renderPageRadar(){var radar=mvuObj('radar_system')||[];if(!Array.isArray(radar)||radar.length===0){return '<div class="empty-state">暂无雷达信号</div>'}var typeNames={machine:'机体',person:'人员',ship:'舰船',base:'基地'};var typeIcons={machine:'⌬',person:'◉',ship:'⌖',base:'▣'};var strengthNames={strong:'强',medium:'中',weak:'弱'};var threatNames={harmless:'无害',suspicious:'可疑',hostile:'敌对',extreme:'极高',unknown:'未知'};var body='<div class="event-filter">';body+='<button class="filter-btn active" data-act="filter-radar" data-val="all">全部</button>';Object.keys(typeNames).forEach(function(t){body+='<button class="filter-btn" data-act="filter-radar" data-val="'+t+'">'+typeNames[t]+'</button>'});body+='</div>';body+=renderBatchBar('radar',radar.length+' 条信号');radar.forEach(function(sig,idx){var id=sig.id||('sig_'+idx);var type=sig.type||'person';var strength=sig.strength||'weak';var threat=sig.threat||'unknown';var desc=sig.description||sig.desc||'';var direction=sig.direction||sig.bearing||'';var unit=sig.unit||sig.unit_desc||'';var origin=sig.origin||sig.belongs_to||'';var note=sig.note||'';var icon=typeIcons[type]||'◉';var typeName=typeNames[type]||type;var strengthName=strengthNames[strength]||strength;var threatName=threatNames[threat]||threat;var inner='<div class="radar-signal"><span style="font-size:var(--fs-md)">'+icon+'</span><span class="radar-type '+type+'">'+typeName+'</span><span class="radar-strength '+strength+'">'+strengthName+'</span><span class="radar-threat '+threat+'">'+threatName+'</span>'+(direction?'<span class="heroine-stat">'+esc(direction)+'</span>':'')+'</div><div class="heroine-stats">'+(unit?'<span>'+esc(unit)+'</span>':'')+(origin?'<span>归属: '+esc(origin)+'</span>':'')+'</div>';var detail='';if(desc){detail+='<div><strong>描述:</strong> '+esc(desc)+'</div>'}if(note){detail+='<div><strong>备注:</strong> '+esc(note)+'</div>'}body+=renderRecordItem('radar',id,inner,detail)});return body}
+
+// ===== 资产库 tab =====
+function renderPageAssets(){var inv=mvuObj('inventory')||[];var storage=mvuObj('storage')||[];var placed=mvuObj('items_placed')||[];var body='';function renderSection(title,arr,cat){if(!Array.isArray(arr)||arr.length===0)return '';var html='<div class="asset-section"><div class="sect-title">'+title+' ('+arr.length+')</div>';html+=renderBatchBar(cat,arr.length+' 件');html+='<div class="asset-grid">';arr.forEach(function(it,idx){var id=it.id||('item_'+cat+idx);var name=it.name||it.title||'未知物品';var qty=it.quantity||it.qty||1;var type=it.type||'';var quality=it.quality||'';var status=it.status||'';var location=it.location||'';var owner=it.owner||'';var inner='<div class="asset-card"><span class="name">'+esc(name)+'</span>'+(qty>1?'<span class="qty">x'+qty+'</span>':'')+'<div class="meta">'+(type?'<span>'+esc(type)+'</span>':'')+(quality?'<span> '+esc(quality)+'</span>':'')+(status?'<span> '+esc(status)+'</span>':'')+'</div>'+(location?'<div class="meta">📍 '+esc(location)+'</div>':'')+(owner?'<div class="meta">👤 '+esc(owner)+'</div>':'')+'</div>';html+=renderRecordItem(cat,id,inner,'')});html+='</div></div>';return html}body+=renderSection('🎒 持有物',inv,'inventory');body+=renderSection('📦 仓库',storage,'storage');body+=renderSection('📍 放置中',placed,'placed');if(!inv.length&&!storage.length&&!placed.length){body+='<div class="empty-state">暂无资产记录</div>'}return body}
+
+// ===== 制造工坊 tab =====
+var craftSelectedId=null;var craftFilter='all';
+function renderPageCrafting(){var recipes=mvuObj('crafting_recipes')||[];if(!Array.isArray(recipes)||recipes.length===0){return '<div class="empty-state">暂无制造配方</div>'}var body='<div class="craft-layout"><div class="craft-list">';body+='<input type="text" class="craft-search" id="craft-search" placeholder="搜索配方..." value="">';body+='<div class="event-filter">';body+='<button class="filter-btn '+(craftFilter==='all'?'active':'')+'" data-act="filter-craft" data-val="all">全部</button>';body+='<button class="filter-btn '+(craftFilter==='craft'?'active':'')+'" data-act="filter-craft" data-val="craft">制造</button>';body+='<button class="filter-btn '+(craftFilter==='modify'?'active':'')+'" data-act="filter-craft" data-val="modify">改造</button>';body+='<button class="filter-btn '+(craftFilter==='upgrade'?'active':'')+'" data-act="filter-craft" data-val="upgrade">升级</button>';body+='</div>';var filtered=recipes.filter(function(r){if(craftFilter!=='all'&&(r.type||'craft')!==craftFilter)return false;return true});filtered.forEach(function(r,idx){var id=r.id||('recipe_'+idx);var name=r.name||r.title||'未知配方';var type=r.type||'craft';var desc=r.description||r.desc||'';var cls=(id===craftSelectedId)?'active':'';body+='<div class="craft-recipe '+cls+'" data-act="select-craft" data-id="'+esc(id)+'"><div class="heroine-row"><span class="heroine-name">'+esc(name)+'</span><span class="heroine-stat">'+esc(type)+'</span></div>'+(desc?'<div class="heroine-stats"><span>'+esc(desc.substring(0,40))+'</span></div>':'')+'</div>'});body+='</div>';body+='<div class="craft-detail">';if(craftSelectedId){var sel=recipes.find(function(r){return (r.id||'')===craftSelectedId})||(filtered[0]||null);if(sel){var name=sel.name||sel.title||'未知配方';var desc=sel.description||sel.desc||'';var materials=sel.materials||sel.material_list||[];var outputs=sel.outputs||sel.output||[];var unlock=sel.unlock_condition||sel.unlock||'';var before=sel.before||sel.preview_before||[];var after=sel.after||sel.preview_after||[];body+='<div class="sect-title">🔧 '+esc(name)+'</div>';if(desc){body+='<div class="heroine-stats" style="margin-bottom:6px">'+esc(desc)+'</div>'}if(unlock){body+='<div class="heroine-stats" style="color:var(--c-warn)">解锁条件: '+esc(unlock)+'</div>'}if(Array.isArray(materials)&&materials.length>0){body+='<div class="sect-title">材料清单</div>';materials.forEach(function(m){var mname=m.name||m.item||'';var need=m.need||m.required||1;var have=m.have||m.owned||0;var ok=have>=need;body+='<div class="craft-mat"><span>'+esc(mname)+'</span><span class="'+(ok?'ok':'no')+'">'+have+'/'+need+(ok?' ✅':' ❌')+'</span></div>'})}if(Array.isArray(before)&&before.length>0&&Array.isArray(after)&&after.length>0){body+='<div class="sect-title">改造对比</div><div class="craft-diff">';for(var i=0;i<before.length;i++){var b=before[i]||{};var a=after[i]||{};body+='<div class="craft-diff-row"><span class="before">'+esc(b.label||b.key||'')+' '+esc(b.value||'')+'</span><span>→</span><span class="after">'+esc(a.value||'')+'</span></div>'}body+='</div>'}if(Array.isArray(outputs)&&outputs.length>0){body+='<div class="sect-title">产出</div>';outputs.forEach(function(o){var oname=o.name||o.item||'';var oqty=o.quantity||o.qty||1;body+='<div class="craft-mat"><span>'+esc(oname)+'</span><span class="ok">x'+oqty+'</span></div>'})}body+='<button class="batch-btn" data-act="execute-craft" data-id="'+esc(craftSelectedId)+'" style="width:100%;margin-top:8px">确认制造</button>'}}else{body+='<div class="empty-state">选择左侧配方查看详情</div>'}body+='</div></div>';return body}
+
+// ===== 载具 tab =====
+function renderPageVehicle(){var vehicles=mvuObj('vehicles')||[];if(!Array.isArray(vehicles)||vehicles.length===0){return '<div class="empty-state">暂无载具记录</div>'}var statusNames={parked:'停放',moving:'行驶',repair:'维修',damaged:'损坏',stolen:'失窃'};var body=renderBatchBar('vehicle',vehicles.length+' 辆');vehicles.forEach(function(v,idx){var id=v.id||('veh_'+idx);var type=v.type||v.vehicle_type||'';var brand=v.brand||v.model||'';var plate=v.plate||v.license_plate||'';var location=v.location||'';var status=v.status||v.move_status||'parked';var energy=v.energy||v.fuel||'';var durability=v.durability||v.condition||'';var maintenance=v.maintenance||'';var seats=v.seats||[];var storage=v.storage||v.cargo||[];var statusName=statusNames[status]||status;var inner='<div class="vehicle-card"><div class="heroine-row"><span class="heroine-name">'+esc(brand||type)+'</span><span class="vehicle-status '+status+'">'+statusName+'</span></div><div class="heroine-stats">'+(type?'<span>'+esc(type)+'</span>':'')+(plate?'<span>车牌: '+esc(plate)+'</span>':'')+(location?'<span>📍 '+esc(location)+'</span>':'')+'</div><div class="heroine-stats">'+(energy!==''?'<span>能源: '+esc(energy)+'</span>':'')+(durability!==''?'<span>耐久: '+esc(durability)+'</span>':'')+(maintenance?'<span>维护: '+esc(maintenance)+'</span>':'')+'</div></div>';var detail='';if(Array.isArray(seats)&&seats.length>0){detail+='<div class="sect-title">座位详情</div>';seats.forEach(function(st){detail+='<div class="sub-card"><span>'+esc(st.type||st.seat_type||'')+'</span> '+(st.user||st.occupant?'<span>→ '+esc(st.user||st.occupant)+'</span>':'<span class="heroine-stat">空</span>')+'</div>'})}if(Array.isArray(storage)&&storage.length>0){detail+='<div class="sect-title">储物空间</div>';storage.forEach(function(st){detail+='<div class="sub-card">'+esc(st.name||st.item||'')+' x'+esc(st.qty||st.quantity||1)+'</div>'})}body+=renderRecordItem('vehicle',id,inner,detail)});return body}
+
+// ===== 居所 tab =====
+function renderPageResidence(){var residences=mvuObj('residences')||[];if(!Array.isArray(residences)||residences.length===0){return '<div class="empty-state">暂无居所记录</div>'}var body=renderBatchBar('residence',residences.length+' 处');residences.forEach(function(r,idx){var id=r.id||('res_'+idx);var type=r.type||r.residence_type||'';var status=r.status||r.living_status||'';var rooms=r.rooms||[];var facilities=r.public_facilities||[];var inner='<div class="residence-card"><div class="heroine-row"><span class="heroine-name">'+esc(type||'居所')+'</span>'+(status?'<span class="heroine-stat">'+esc(status)+'</span>':'')+'</div></div>';var detail='';if(Array.isArray(rooms)&&rooms.length>0){detail+='<div class="sect-title">房间 ('+rooms.length+')</div>';rooms.forEach(function(rm){var roomType=rm.type||rm.room_type||'';var occupant=rm.occupant||rm.person||'';var privacy=rm.privacy||rm.privacy_level||'';var cleanliness=rm.cleanliness||rm.tidiness||'';var comfort=rm.comfort||'';detail+='<div class="sub-card"><div class="heroine-row"><span>'+esc(roomType)+'</span>'+(occupant?'<span>👤 '+esc(occupant)+'</span>':'')+'</div><div class="heroine-stats">'+(privacy?'<span>隐私: '+esc(privacy)+'</span>':'')+(cleanliness?'<span>整洁: '+esc(cleanliness)+'</span>':'')+(comfort?'<span>舒适: '+esc(comfort)+'</span>':'')+'</div></div>'})}if(Array.isArray(facilities)&&facilities.length>0){detail+='<div class="sect-title">公共设施 ('+facilities.length+')</div>';facilities.forEach(function(f){var fType=f.type||f.facility_type||'';var fName=f.name||f.facility||'';var fStatus=f.status||f.open_status||'';detail+='<div class="sub-card"><div class="heroine-row"><span>'+esc(fType||fName)+'</span>'+(fStatus?'<span class="heroine-stat">'+esc(fStatus)+'</span>':'')+'</div></div>'})}body+=renderRecordItem('residence',id,inner,detail)});return body}
+
+function switchPage(page){currentPage=page;render()}
+
+function notifyCC(type,payload){try{var msg={type:type};if(payload)for(var k in payload)if(Object.prototype.hasOwnProperty.call(payload,k))msg[k]=payload[k];var origin=window.location.origin||'*';window.postMessage(msg,origin);if(window.parent&&window.parent!==window)window.parent.postMessage(msg,origin);if(window.top&&window.top!==window)window.top.postMessage(msg,origin)}catch(e){}}
+var ccSwitchState={floatball:true,opening:true,media_lib:false,auto_refresh:true,event_notify:true,diy:false};
+function requestCCState(){notifyCC('fjb-cc-get-state',{})}
+function switchTheme(theme){currentTheme=theme;var root=document.documentElement;var t=THEMES[theme]||THEMES.pink;for(var k in t){if(Object.prototype.hasOwnProperty.call(t,k))root.style.setProperty(k,t[k])}notifyCC('fjb-set-theme',{theme:theme});render()}
+
+function render(){var loadingEl=document.getElementById('sb-loading');var bodyEl=document.getElementById('sb-body');if(!bodyEl)return;if(State.loading){loadingEl.style.display='';bodyEl.style.display='none';return}loadingEl.style.display='none';bodyEl.style.display='';var pageEls=document.querySelectorAll('.sb-page');for(var i=0;i<pageEls.length;i++){var p=pageEls[i].getAttribute('data-page');if(p===currentPage){pageEls[i].style.display='';pageEls[i].innerHTML=renderPageByName(p)}else{pageEls[i].style.display='none'}}var navBtns=document.querySelectorAll('.sb-nav button');for(var j=0;j<navBtns.length;j++){if(navBtns[j].getAttribute('data-page')===currentPage)navBtns[j].classList.add('active');else navBtns[j].classList.remove('active')}}
+
+function showModal(title,content){var overlay=document.getElementById('modal-overlay');var modal=document.getElementById('modal-content');modal.innerHTML='<div class="modal-title"><span>'+esc(title)+'</span><button class="modal-close" data-act="close-modal">✕</button></div>'+content;overlay.className='modal-overlay show'}
+function closeModal(){document.getElementById('modal-overlay').className='modal-overlay'}
+
+function bindEvents(){var root=document.getElementById('sb-root');root.addEventListener('toggle',function(e){var t=e.target;if(t&&t.tagName==='DETAILS'){var key=t.getAttribute('data-key');if(key){State.expanded[key]=t.hasAttribute('open')}}},true);root.addEventListener('click',function(e){var navBtn=e.target.closest('.sb-nav button');if(navBtn){switchPage(navBtn.getAttribute('data-page'));return}var t=e.target.closest('[data-act]');if(!t)return;var act=t.getAttribute('data-act');if(act==='refresh'){refresh()}else if(act==='heroine-detail'){renderHeroineDetail(t.getAttribute('data-key'))}else if(act==='set-difficulty'){var val=t.getAttribute('data-val');var input=document.querySelector('#send_textarea textarea')||document.querySelector('textarea');if(input){input.value='切换难度为'+val;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}}else if(act==='set-theme'){switchTheme(t.getAttribute('data-val'))}else if(act==='filter-event'){currentEventFilter=t.getAttribute('data-val');render()}
+// P0-1: 批量选择/展开折叠/批量删除
+else if(act==='toggle-batch'){batchSelectMode=!batchSelectMode;if(!batchSelectMode)batchSelected={};render()}
+else if(act==='toggle-detail'){var did=t.getAttribute('data-id');var el=document.getElementById('detail-'+did);if(el){var isShow=el.classList.toggle('show');t.textContent=isShow?'收起':'展开'}}
+else if(act==='batch-delete'){var cat=t.getAttribute('data-cat');if(batchSelected[cat]){var ids=Object.keys(batchSelected[cat]).filter(function(k){return batchSelected[cat][k]});if(ids.length>0){var input=document.querySelector('#send_textarea textarea')||document.querySelector('textarea');if(input){input.value='删除'+cat+'记录: '+ids.join(', ');input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}}}}
+else if(act==='filter-radar'){render()}
+else if(act==='filter-craft'){craftFilter=t.getAttribute('data-val');render()}
+else if(act==='select-craft'){craftSelectedId=t.getAttribute('data-id');render()}
+else if(act==='execute-craft'){var cid=t.getAttribute('data-id');var input=document.querySelector('#send_textarea textarea')||document.querySelector('textarea');if(input){input.value='执行制造: '+cid;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}}
+});root.addEventListener('change',function(e){var t=e.target;if(!t)return;if(t.getAttribute('data-act')==='toggle-fn'){var sw=t.getAttribute('data-val');ccSwitchState[sw]=t.checked;notifyCC('fjb-cc-set-switch',{key:sw,value:t.checked})}else if(t.getAttribute('data-act')==='batch-check'){var cat=t.getAttribute('data-cat');var id=t.getAttribute('data-id');if(!batchSelected[cat])batchSelected[cat]={};batchSelected[cat][id]=t.checked;var bar=document.querySelector('.batch-bar .batch-info');if(bar){var count=Object.keys(batchSelected[cat]).filter(function(k){return batchSelected[cat][k]}).length;bar.textContent='已选 '+count+' 条'}}});root.addEventListener('click',function(e){var item=e.target.closest('.shop-item.buyable');if(!item)return;var itemId=item.getAttribute('data-item');var price=Number(item.getAttribute('data-price'))||0;var itemName=item.getAttribute('data-name')||item.querySelector('.heroine-name').textContent;var input=document.querySelector('#send_textarea textarea')||document.querySelector('textarea');if(input){input.value='购买'+itemName+'（'+price+'元）';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}});document.getElementById('modal-overlay').addEventListener('click',function(e){var t=e.target.closest('[data-act]');if(t&&t.getAttribute('data-act')==='close-modal'){closeModal()}})}
+
+async function refresh(){if(State._refreshing)return;State._refreshing=true;State.refreshing=true;var quickStat=readStatDataSync();if(hasData(quickStat)){State.mvu=quickStat;State.loading=false}render();try{var realStat=await readStatDataAsync();if(hasData(realStat)){State.mvu=realStat;State.loading=false}}catch(e){}State._refreshing=false;State.refreshing=false;render();requestStatFromBridge()}
+
+(function init(){bindEvents();var autoRefresh=function(){setTimeout(refresh,800)};var hostEventOn=pickHostValue('eventOn');try{if(typeof hostEventOn==='function'){hostEventOn('GENERATION_ENDED',autoRefresh);hostEventOn('MESSAGE_EDITED',autoRefresh);hostEventOn('mag_variable_update_ended',autoRefresh)}}catch(e){}window.addEventListener('message',function(e){try{if(e.origin&&e.origin!==window.location.origin)return;var data=e.data;if(data&&data.type==='fjb-mvu-stat-data'&&data.stat_data){var mesId=resolveMessageId();if(mesId>=0&&typeof data.messageId==='number'&&data.messageId>=0&&data.messageId!==mesId)return;if(hasData(data.stat_data)){cachedStatFromBridge=data.stat_data;State.mvu=deepMergeStat(DEFAULT_STAT,data.stat_data);State.loading=false;render()}return}if(data&&data.type==='fjb-set-theme'&&data.theme){currentTheme=data.theme;var root=document.documentElement;var t=THEMES[currentTheme]||THEMES.pink;for(var k in t){if(Object.prototype.hasOwnProperty.call(t,k))root.style.setProperty(k,t[k])}render();return}if(data&&data.type==='fjb-cc-state'&&data.state){if(data.state.switches)ccSwitchState=data.state.switches;if(data.state.theme){currentTheme=data.state.theme;var root2=document.documentElement;var t2=THEMES[currentTheme]||THEMES.pink;for(var k2 in t2){if(Object.prototype.hasOwnProperty.call(t2,k2))root2.style.setProperty(k2,t2[k2])}}render();return}}catch(x){}});var embedded=parseEmbeddedStat();if(embedded)cachedStatFromBridge=embedded;requestStatFromBridge();requestCCState();refresh()})();
+</script>
+</body>
+</html>

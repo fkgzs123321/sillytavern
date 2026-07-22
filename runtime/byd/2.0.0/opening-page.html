@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>开局页 · 不要玩弄我的鸡吧</title>
+<style>
+/* ===== 全局变量与基础重置 ===== */
+:root{
+  --bg-0:#fff0f5;            /* 最浅背景 */
+  --bg-1:#ffe4ec;            /* 次浅背景 */
+  --bg-card:rgba(255,192,203,.22);
+  --c-text:#5a2a3a;          /* 主文字色（深玫红） */
+  --c-dim:rgba(90,42,58,.72);/* 次级文字 */
+  --c-muted:rgba(90,42,58,.55);
+  --c-border:rgba(255,105,180,.32);
+  --c-accent:#ff69b4;        /* 主色：热粉 */
+  --c-pink:#ff1493;          /* 强调色：深粉 */
+  --c-warn:#ff9ec4;
+  --c-danger:#ff6b8a;
+  --c-safe:#ffb6d9;
+  --c-ok:#7ed957;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fs-xs:clamp(10px,2vw,11px);
+  --fs-sm:clamp(11px,2.2vw,12px);
+  --fs-base:clamp(12px,2.5vw,13px);
+  --fs-md:clamp(13px,2.8vw,15px);
+  --fs-lg:clamp(16px,3.4vw,20px);
+  --fs-xl:clamp(22px,5vw,32px);
+  --radius:14px;
+  --radius-lg:18px;
+  --blur:blur(12px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:var(--font);color:var(--c-text);background:transparent;font-size:var(--fs-base);line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+label{display:block}
+
+/* ===== 开局页根容器 ===== */
+.fjb-opening{
+  position:relative;width:100%;
+  background:
+    radial-gradient(circle at 22% 0%,rgba(255,182,193,.32),transparent 38%),
+    radial-gradient(circle at 88% 100%,rgba(255,20,147,.16),transparent 42%),
+    linear-gradient(180deg,#fff0f5 0%,#ffe4ec 54%,#ffd1dc 100%);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  padding:clamp(10px,2vw,16px);
+}
+.fjb-view{display:none}
+.fjb-view.active{display:block}
+
+/* ===== 视图：boot 封面 ===== */
+.fjb-boot{
+  width:100%;
+  aspect-ratio:9/16;
+  max-height:calc(100vh - 80px);
+  margin:0 auto;
+  display:grid;
+  grid-template-rows:1fr auto;
+  position:relative;
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 50% 18%,rgba(255,240,245,.92),rgba(255,228,236,.7) 46%,rgba(255,209,220,.55) 100%),
+    linear-gradient(180deg,#fff0f5,#ffe4ec 60%,#ffd1dc);
+  border:1px solid rgba(255,105,180,.28);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.5),0 14px 44px rgba(255,105,180,.22);
+}
+/* 封面装饰光晕 */
+.fjb-boot::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(50% 30% at 50% 12%,rgba(255,105,180,.22),transparent 70%),
+    radial-gradient(60% 24% at 80% 88%,rgba(255,20,147,.18),transparent 72%);
+}
+/* 封面主体 */
+.fjb-boot-main{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:clamp(20px,4vw,36px) clamp(16px,3vw,24px);
+  text-align:center;
+}
+.fjb-brand-line{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(255,105,180,.4);
+  background:rgba(255,240,245,.6);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  color:var(--c-pink);font-size:var(--fs-xs);letter-spacing:2px;font-weight:600;
+  margin-bottom:clamp(10px,2vw,16px);
+}
+.fjb-brand-line::before{content:"✦";color:var(--c-accent)}
+.fjb-title{
+  font-size:clamp(28px,7vw,46px);
+  font-weight:800;letter-spacing:2px;line-height:1.12;
+  color:var(--c-pink);
+  text-shadow:0 2px 18px rgba(255,105,180,.4),0 1px 2px rgba(255,255,255,.6);
+  margin-bottom:8px;
+}
+.fjb-subtitle{
+  font-size:var(--fs-md);color:var(--c-dim);
+  letter-spacing:1.5px;font-weight:500;
+  text-shadow:0 1px 6px rgba(255,255,255,.6);
+}
+.fjb-boot-tagline{
+  margin-top:14px;font-size:var(--fs-sm);color:var(--c-muted);
+  max-width:340px;line-height:1.7;
+}
+/* 封面控制台（底部毛玻璃） */
+.fjb-boot-console{
+  position:relative;z-index:1;
+  display:grid;gap:10px;
+  padding:clamp(12px,2.6vw,18px);
+  background:linear-gradient(180deg,rgba(255,240,245,.55),rgba(255,228,236,.78));
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-top:1px solid rgba(255,182,193,.4);
+}
+/* 依赖检测面板 */
+.fjb-deps{
+  display:grid;gap:8px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.42);
+  border:1px solid rgba(255,182,193,.36);
+  border-radius:var(--radius);
+}
+.fjb-deps-head{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:var(--fs-sm);font-weight:700;color:var(--c-pink);
+  letter-spacing:1px;
+}
+.fjb-deps-head .pill{font-size:var(--fs-xs)}
+.fjb-dep-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fjb-dep-item{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 9px;border-radius:10px;
+  background:rgba(255,192,203,.16);
+  border:1px solid rgba(255,182,193,.28);
+  font-size:var(--fs-xs);
+}
+.fjb-dep-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--c-warn);flex-shrink:0;
+  box-shadow:0 0 6px rgba(255,158,196,.6);
+}
+.fjb-dep-dot.ok{background:var(--c-ok);box-shadow:0 0 6px rgba(126,217,87,.6)}
+.fjb-dep-dot.fail{background:var(--c-danger);box-shadow:0 0 6px rgba(255,107,138,.6)}
+.fjb-dep-name{flex:1;color:var(--c-text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fjb-dep-tag{font-size:10px;color:var(--c-muted)}
+.fjb-dep-tag.ok{color:var(--c-ok)}
+.fjb-dep-tag.fail{color:var(--c-danger)}
+
+/* 准备进度条 */
+.fjb-meter{display:grid;gap:5px}
+.fjb-meter-row{display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--c-dim)}
+.fjb-meter-bar{
+  height:6px;border-radius:999px;
+  background:rgba(255,182,193,.28);overflow:hidden;
+}
+.fjb-meter-bar i{
+  display:block;height:100%;width:0;border-radius:inherit;
+  background:linear-gradient(90deg,var(--c-accent),var(--c-pink));
+  transition:width .4s ease;
+  box-shadow:0 0 8px rgba(255,105,180,.5);
+}
+
+/* 协议 */
+.fjb-agreement{
+  padding:9px 12px;border-radius:var(--radius);
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(255,105,180,.34);
+  font-size:var(--fs-xs);color:var(--c-dim);line-height:1.55;
+}
+.fjb-agreement-check{
+  display:flex;align-items:center;gap:8px;margin-top:6px;
+  cursor:pointer;font-size:var(--fs-sm);color:var(--c-text);
+}
+.fjb-agreement-check input{
+  width:18px;height:18px;accent-color:var(--c-accent);margin:0;
+}
+
+/* 按钮 */
+.fjb-btn{
+  min-height:44px;padding:10px 18px;
+  border-radius:var(--radius);
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(255,182,193,.4);
+  color:var(--c-text);font-size:var(--fs-base);font-weight:600;
+  transition:all .2s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.fjb-btn:hover{background:rgba(255,192,203,.32);border-color:var(--c-accent)}
+.fjb-btn:disabled{opacity:.5;cursor:not-allowed}
+.fjb-btn.primary{
+  background:linear-gradient(135deg,rgba(255,105,180,.92),rgba(255,20,147,.92));
+  color:#fff;border-color:transparent;
+  box-shadow:0 6px 22px rgba(255,105,180,.4),0 0 0 1px rgba(255,255,255,.2) inset;
+  font-weight:700;letter-spacing:1px;
+}
+.fjb-btn.primary:hover{filter:brightness(1.08)}
+.fjb-btn.primary:disabled{box-shadow:none}
+.fjb-btn.warn{
+  background:rgba(255,158,196,.32);
+  border-color:rgba(255,158,196,.55);
+  color:var(--c-pink);
+}
+.fjb-actions{display:flex;flex-wrap:wrap;gap:8px}
+.fjb-actions .fjb-btn{flex:1 1 auto;min-width:120px}
+.fjb-actions .fjb-btn.primary{flex:1 1 220px}
+
+/* ===== 视图：wizard 向导 ===== */
+.fjb-wizard{display:flex;flex-direction:column;gap:12px}
+.fjb-steps{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  padding:8px;
+  background:rgba(255,255,255,.42);
+  border:1px solid rgba(255,182,193,.34);
+  border-radius:var(--radius);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+}
+.fjb-step{
+  padding:8px 4px;border-radius:10px;
+  background:rgba(255,192,203,.1);
+  border:1px solid transparent;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:var(--fs-xs);color:var(--c-dim);
+  transition:all .2s;min-height:50px;
+}
+.fjb-step em{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,182,193,.32);color:var(--c-text);
+  display:flex;align-items:center;justify-content:center;
+  font-style:normal;font-size:var(--fs-xs);font-weight:700;
+}
+.fjb-step strong{font-size:var(--fs-xs);font-weight:600;color:var(--c-text)}
+.fjb-step span{font-size:10px;color:var(--c-muted)}
+.fjb-step.active{
+  background:rgba(255,105,180,.18);
+  border-color:var(--c-accent);
+  box-shadow:0 0 0 1px rgba(255,105,180,.3);
+}
+.fjb-step.active em{background:var(--c-accent);color:#fff}
+.fjb-step.done em{background:var(--c-ok);color:#fff}
+.fjb-step.done{opacity:.85}
+
+/* 进度条 */
+.fjb-progress{height:4px;border-radius:999px;background:rgba(255,182,193,.24);overflow:hidden}
+.fjb-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c-accent),var(--c-pink));transition:width .3s;border-radius:inherit}
+
+/* 面板 */
+.fjb-pane{display:none}
+.fjb-pane.active{display:block;animation:fjbFade .35s ease}
+@keyframes fjbFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fjb-panel{
+  background:rgba(255,255,255,.5);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid rgba(255,182,193,.34);
+  border-radius:var(--radius-lg);
+  padding:clamp(12px,2.4vw,18px);
+  margin-bottom:10px;
+  box-shadow:0 4px 18px rgba(255,105,180,.1);
+}
+.fjb-panel h3{
+  font-size:var(--fs-lg);font-weight:700;color:var(--c-pink);
+  margin-bottom:8px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.fjb-panel h3::before{
+  content:"";width:4px;height:18px;border-radius:3px;
+  background:linear-gradient(180deg,var(--c-accent),var(--c-pink));
+}
+.fjb-note{
+  font-size:var(--fs-xs);color:var(--c-muted);
+  margin:6px 0 10px;line-height:1.6;
+  padding:8px 10px;background:rgba(255,192,203,.12);border-radius:10px;
+  border-left:3px solid var(--c-accent);
+}
+
+/* 表单字段 */
+.fjb-fields{display:grid;gap:10px}
+.fjb-fields label{display:grid;gap:4px}
+.fjb-fields label > span{
+  font-size:var(--fs-xs);color:var(--c-dim);font-weight:600;
+  letter-spacing:.5px;
+}
+.fjb-fields input,.fjb-fields textarea,.fjb-fields select{
+  width:100%;min-width:0;
+  background:rgba(255,255,255,.7);
+  border:1px solid rgba(255,182,193,.42);
+  color:var(--c-text);
+  padding:8px 10px;border-radius:10px;
+  font-size:var(--fs-sm);line-height:1.5;
+  transition:border-color .2s,background .2s;
+}
+.fjb-fields input:focus,.fjb-fields textarea:focus,.fjb-fields select:focus{
+  outline:none;border-color:var(--c-accent);
+  background:rgba(255,255,255,.9);
+  box-shadow:0 0 0 3px rgba(255,105,180,.16);
+}
+.fjb-fields textarea{resize:vertical;min-height:64px;font-family:inherit}
+.fjb-fields small{font-size:10px;color:var(--c-muted);margin-top:2px}
+
+/* 六维属性 */
+.fjb-attr-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  margin-top:10px;
+}
+@media (max-width:640px){.fjb-attr-grid{grid-template-columns:1fr}}
+.fjb-attr-list{display:grid;gap:8px}
+.fjb-attr-row{
+  display:grid;grid-template-columns:60px 1fr 32px;align-items:center;gap:8px;
+  padding:6px 10px;border-radius:10px;
+  background:rgba(255,192,203,.14);
+  border:1px solid rgba(255,182,193,.26);
+}
+.fjb-attr-row span{font-size:var(--fs-sm);font-weight:600;color:var(--c-text)}
+.fjb-attr-row input[type=range]{
+  width:100%;height:6px;-webkit-appearance:none;appearance:none;
+  background:rgba(255,182,193,.36);border-radius:999px;outline:none;
+}
+.fjb-attr-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--c-accent);cursor:pointer;
+  box-shadow:0 0 0 3px rgba(255,105,180,.22);
+  border:2px solid #fff;
+}
+.fjb-attr-row input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--c-accent);cursor:pointer;border:2px solid #fff;
+  box-shadow:0 0 0 3px rgba(255,105,180,.22);
+}
+.fjb-attr-row b{
+  font-size:var(--fs-sm);font-weight:700;color:var(--c-pink);
+  text-align:center;
+}
+/* 雷达图卡片 */
+.fjb-radar{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:10px;border-radius:var(--radius);
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(255,182,193,.3);
+}
+.fjb-radar svg{width:100%;max-width:200px;height:auto}
+.fjb-radar-status{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.fjb-pill{
+  font-size:var(--fs-xs);padding:3px 9px;border-radius:999px;
+  background:rgba(255,192,203,.18);border:1px solid rgba(255,182,193,.3);
+  color:var(--c-accent);white-space:nowrap;
+}
+.fjb-pill.warn{background:rgba(255,158,196,.22);color:var(--c-warn)}
+.fjb-pill.danger{background:rgba(255,107,138,.2);color:var(--c-danger)}
+.fjb-pill.ok{background:rgba(126,217,87,.2);color:var(--c-ok);border-color:rgba(126,217,87,.36)}
+
+/* 角色包/因子 列表 */
+.fjb-choice-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;
+  margin-top:8px;
+}
+.fjb-choice{
+  padding:10px;border-radius:var(--radius);
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(255,182,193,.34);
+  text-align:left;
+  transition:all .2s;
+  display:flex;flex-direction:column;gap:3px;
+  min-height:60px;
+}
+.fjb-choice:hover{background:rgba(255,192,203,.22);border-color:var(--c-accent)}
+.fjb-choice.selected{
+  background:rgba(255,105,180,.18);
+  border-color:var(--c-accent);
+  box-shadow:0 0 0 1px var(--c-accent),0 4px 14px rgba(255,105,180,.2);
+}
+.fjb-choice strong{font-size:var(--fs-sm);color:var(--c-text);font-weight:700}
+.fjb-choice span{font-size:10px;color:var(--c-muted);line-height:1.4}
+.fjb-choice.selected strong{color:var(--c-pink)}
+
+/* 因子复选项（带勾选框） */
+.fjb-check-choice{
+  padding:9px 10px;border-radius:var(--radius);
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(255,182,193,.34);
+  display:flex;align-items:flex-start;gap:8px;
+  cursor:pointer;transition:all .2s;
+}
+.fjb-check-choice:hover{background:rgba(255,192,203,.22)}
+.fjb-check-choice.selected{
+  background:rgba(255,105,180,.16);
+  border-color:var(--c-accent);
+}
+.fjb-check-box{
+  width:18px;height:18px;border-radius:5px;
+  border:2px solid rgba(255,182,193,.55);
+  flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.fjb-check-choice.selected .fjb-check-box{
+  background:var(--c-accent);border-color:var(--c-accent);
+}
+.fjb-check-box::after{
+  content:"";width:5px;height:9px;
+  border:solid #fff;border-width:0 2px 2px 0;
+  transform:rotate(45deg) scale(0);transition:transform .2s;
+}
+.fjb-check-choice.selected .fjb-check-box::after{transform:rotate(45deg) scale(1)}
+.fjb-check-body{flex:1;min-width:0}
+.fjb-check-body strong{display:block;font-size:var(--fs-sm);color:var(--c-text);font-weight:700}
+.fjb-check-body span{display:block;font-size:10px;color:var(--c-muted);line-height:1.4;margin-top:2px}
+
+/* 开关行 */
+.fjb-switch-list{display:grid;gap:6px;margin-top:8px}
+.fjb-switch-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;border-radius:var(--radius);
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(255,182,193,.3);
+}
+.fjb-switch-row .info{flex:1;min-width:0}
+.fjb-switch-row .info strong{display:block;font-size:var(--fs-sm);color:var(--c-text);font-weight:700}
+.fjb-switch-row .info span{display:block;font-size:10px;color:var(--c-muted);margin-top:1px}
+.fjb-toggle{
+  position:relative;width:40px;height:22px;flex-shrink:0;
+  background:rgba(255,182,193,.4);border-radius:999px;
+  transition:background .2s;cursor:pointer;
+}
+.fjb-toggle::after{
+  content:"";position:absolute;top:2px;left:2px;
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.fjb-toggle.on{background:var(--c-accent)}
+.fjb-toggle.on::after{left:20px}
+
+/* 草稿管理 */
+.fjb-draft-box{
+  padding:10px 12px;border-radius:var(--radius);
+  background:rgba(255,255,255,.5);
+  border:1px dashed rgba(255,182,193,.5);
+  font-size:var(--fs-xs);color:var(--c-dim);
+  line-height:1.6;margin-top:8px;
+  word-break:break-all;
+}
+
+/* 确认页汇总 */
+.fjb-summary{
+  display:grid;gap:8px;margin-top:8px;
+}
+.fjb-summary-row{
+  display:grid;grid-template-columns:90px 1fr;gap:10px;
+  padding:8px 10px;border-radius:10px;
+  background:rgba(255,192,203,.12);
+  border:1px solid rgba(255,182,193,.24);
+  font-size:var(--fs-xs);
+}
+.fjb-summary-row .k{color:var(--c-muted);font-weight:600}
+.fjb-summary-row .v{color:var(--c-text);word-break:break-all}
+.fjb-final-preview{
+  padding:10px 12px;border-radius:var(--radius);
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(255,182,193,.4);
+  font-size:var(--fs-xs);color:var(--c-text);
+  line-height:1.7;white-space:pre-wrap;
+  max-height:240px;overflow-y:auto;
+  font-family:-apple-system,"PingFang SC",monospace;
+}
+
+/* 向导底部导航 */
+.fjb-wizard-actions{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:10px;border-radius:var(--radius);
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(255,182,193,.3);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+}
+.fjb-wizard-actions .fjb-btn{flex:1 1 auto;min-width:90px}
+
+/* ===== 视图：workshop 工坊（简化版浮窗） ===== */
+.fjb-workshop{
+  position:fixed;inset:0;z-index:9999;
+  display:none;align-items:center;justify-content:center;
+  padding:16px;
+  background:rgba(90,42,58,.4);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+}
+.fjb-workshop.active{display:flex}
+.fjb-workshop-panel{
+  width:min(560px,94vw);max-height:84vh;
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg,#fff0f5,#ffe4ec);
+  border:1px solid rgba(255,105,180,.32);
+  border-radius:var(--radius-lg);
+  box-shadow:0 20px 60px rgba(90,42,58,.3);
+  overflow:hidden;
+}
+.fjb-workshop-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(255,182,193,.34);
+  background:rgba(255,105,180,.1);
+}
+.fjb-workshop-head h3{font-size:var(--fs-lg);color:var(--c-pink);font-weight:700}
+.fjb-workshop-close{
+  min-width:36px;min-height:36px;border-radius:10px;
+  background:rgba(255,192,203,.24);
+  border:1px solid rgba(255,105,180,.3);
+  color:var(--c-pink);font-size:18px;
+}
+.fjb-workshop-body{
+  padding:16px 18px;overflow-y:auto;flex:1;
+}
+.fjb-workshop-body p{font-size:var(--fs-sm);color:var(--c-dim);line-height:1.7;margin-bottom:10px}
+.fjb-workshop-placeholder{
+  padding:24px;text-align:center;
+  background:rgba(255,192,203,.14);border-radius:var(--radius);
+  border:1px dashed rgba(255,182,193,.5);
+  color:var(--c-muted);font-size:var(--fs-sm);
+}
+
+/* 工坊入口按钮（悬浮） */
+.fjb-workshop-entry{
+  position:absolute;top:10px;right:10px;z-index:10;
+  min-height:34px;padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.7);
+  border:1px solid rgba(255,105,180,.34);
+  color:var(--c-pink);font-size:var(--fs-xs);font-weight:600;
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+}
+
+/* ===== 通用工具类 ===== */
+.fjb-hidden{display:none!important}
+.fjb-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fjb-row > *{flex:1 1 auto}
+
+/* 响应式 */
+@media (max-width:640px){
+  .fjb-steps{grid-template-columns:repeat(3,1fr)}
+  .fjb-dep-list{grid-template-columns:1fr}
+  .fjb-boot{aspect-ratio:9/16;max-height:none}
+  .fjb-title{font-size:clamp(24px,8vw,36px)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 开局页根容器 ===== -->
+<div class="fjb-opening" data-fjb-opening data-fjb-view="boot">
+
+  <!-- 工坊入口（悬浮） -->
+  <button type="button" class="fjb-workshop-entry" data-fjb-action="open-workshop">✦ 创意工坊</button>
+
+  <!-- ============ 视图1：boot 封面 ============ -->
+  <section class="fjb-view fjb-view-boot active" data-fjb-view-name="boot">
+    <div class="fjb-boot">
+      <div class="fjb-boot-main">
+        <div class="fjb-brand-line">不要玩弄我的鸡吧 · 开局引导</div>
+        <h1 class="fjb-title">不要玩弄我的鸡吧</h1>
+        <p class="fjb-subtitle">高三下学期 · 2月开学</p>
+        <p class="fjb-boot-tagline">私立星月女子学院，全校唯一的男生转学生。<br>再过 126 天就是高考——但比高考更棘手的，<br>是那些夜晚里你无法解释的疲惫与梦。</p>
+      </div>
+      <div class="fjb-boot-console">
+        <!-- 依赖检测面板 -->
+        <div class="fjb-deps">
+          <div class="fjb-deps-head">
+            <span>正在为你准备开局环境</span>
+            <span class="fjb-pill warn" data-fjb-dep-summary>检测中</span>
+          </div>
+          <div class="fjb-dep-list" data-fjb-dep-list>
+            <div class="fjb-dep-item"><span class="fjb-dep-dot warn"></span><span class="fjb-dep-name">MVU 变量系统</span><span class="fjb-dep-tag warn">待确认</span></div>
+            <div class="fjb-dep-item"><span class="fjb-dep-dot warn"></span><span class="fjb-dep-name">控制中心</span><span class="fjb-dep-tag warn">待确认</span></div>
+            <div class="fjb-dep-item"><span class="fjb-dep-dot warn"></span><span class="fjb-dep-name">状态栏</span><span class="fjb-dep-tag warn">待确认</span></div>
+            <div class="fjb-dep-item"><span class="fjb-dep-dot warn"></span><span class="fjb-dep-name">世界书注入</span><span class="fjb-dep-tag warn">待确认</span></div>
+          </div>
+        </div>
+        <!-- 准备进度条 -->
+        <div class="fjb-meter">
+          <div class="fjb-meter-row">
+            <span>入学准备</span>
+            <span data-fjb-ready-count>0/4</span>
+          </div>
+          <div class="fjb-meter-bar"><i data-fjb-ready-meter></i></div>
+        </div>
+        <!-- 协议 -->
+        <div class="fjb-agreement">
+          <div>⚠ 本作品完全免费，请勿在墙内社区、QQ群传播或讨论相关内容；请勿上传自己或他人的真人信息。</div>
+          <label class="fjb-agreement-check">
+            <input type="checkbox" data-fjb-agreement>
+            <span>我已阅读并同意以上协议</span>
+          </label>
+        </div>
+        <!-- 操作按钮 -->
+        <div class="fjb-actions">
+          <button type="button" class="fjb-btn primary" data-fjb-action="enter-wizard" data-fjb-requires-agreement disabled>进入开局设置</button>
+          <button type="button" class="fjb-btn" data-fjb-action="check-deps">重新检测依赖</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 视图2：wizard 向导 ============ -->
+  <section class="fjb-view fjb-view-wizard" data-fjb-view-name="wizard">
+    <!-- 步骤导航 -->
+    <nav class="fjb-steps" aria-label="开局步骤">
+      <button type="button" class="fjb-step active" data-fjb-action="go-step" data-step="1"><em>1</em><strong>身份设定</strong><span>玩家设定</span></button>
+      <button type="button" class="fjb-step" data-fjb-action="go-step" data-step="2"><em>2</em><strong>角色拓展</strong><span>启用角色</span></button>
+      <button type="button" class="fjb-step" data-fjb-action="go-step" data-step="3"><em>3</em><strong>世界因子</strong><span>世界规则</span></button>
+      <button type="button" class="fjb-step" data-fjb-action="go-step" data-step="4"><em>4</em><strong>功能拓展</strong><span>模块勾选</span></button>
+      <button type="button" class="fjb-step" data-fjb-action="go-step" data-step="5"><em>5</em><strong>草稿管理</strong><span>导入导出</span></button>
+      <button type="button" class="fjb-step" data-fjb-action="go-step" data-step="6"><em>6</em><strong>开局确认</strong><span>开始游戏</span></button>
+    </nav>
+    <div class="fjb-progress" aria-hidden="true"><i data-fjb-progress-bar></i></div>
+
+    <!-- 步骤1：身份设定 -->
+    <div class="fjb-pane active" data-fjb-pane="1">
+      <article class="fjb-panel">
+        <h3>玩家身份设定</h3>
+        <p class="fjb-note">你是高三下学期转入星月女子学院的唯一男生。请填写基础信息与六维属性（总计 30 点），右侧雷达图会实时预览。</p>
+        <div class="fjb-fields">
+          <label><span>称呼 / 代号</span><input type="text" data-fjb-field="player_callname" placeholder="如：新来的 / 转学生 / 你的昵称"></label>
+          <label><span>背景补充</span><textarea data-fjb-field="player_background" placeholder="家庭、转学原因、需要被世界承认的身份信息。"></textarea></label>
+          <label><span>外貌设定</span><textarea data-fjb-field="player_appearance" placeholder="发色瞳色、身材、气质、惯常衣着等外观信息。"></textarea></label>
+          <label><span>技能 / 天赋</span><textarea data-fjb-field="player_skills" placeholder="开局拥有的技能、天赋或特长，每行一项（如 观察Lv1 / 自愈 / 隐忍）。"></textarea></label>
+        </div>
+        <!-- 六维属性 -->
+        <div class="fjb-attr-grid">
+          <div class="fjb-attr-list" data-fjb-attr-list>
+            <label class="fjb-attr-row"><span>冥想</span><input type="range" min="0" max="15" value="5" data-fjb-attr="meditation"><b>5</b></label>
+            <label class="fjb-attr-row"><span>锻炼</span><input type="range" min="0" max="15" value="5" data-fjb-attr="exercise"><b>5</b></label>
+            <label class="fjb-attr-row"><span>洞察</span><input type="range" min="0" max="15" value="5" data-fjb-attr="insight"><b>5</b></label>
+            <label class="fjb-attr-row"><span>伪装</span><input type="range" min="0" max="15" value="5" data-fjb-attr="disguise"><b>5</b></label>
+            <label class="fjb-attr-row"><span>恢复</span><input type="range" min="0" max="15" value="5" data-fjb-attr="recovery"><b>5</b></label>
+            <label class="fjb-attr-row"><span>意志</span><input type="range" min="0" max="15" value="5" data-fjb-attr="willpower"><b>5</b></label>
+          </div>
+          <div class="fjb-radar">
+            <svg viewBox="0 0 200 200" aria-label="六维属性雷达图" data-fjb-radar>
+              <!-- 背景网格 -->
+              <polygon points="100,40 152,70 152,130 100,160 48,130 48,70" fill="none" stroke="rgba(255,182,193,.4)" stroke-width="1"/>
+              <polygon points="100,60 134.6,80 134.6,120 100,140 65.4,120 65.4,80" fill="none" stroke="rgba(255,182,193,.3)" stroke-width="1"/>
+              <polygon points="100,80 117.3,90 117.3,110 100,120 82.7,110 82.7,90" fill="none" stroke="rgba(255,182,193,.2)" stroke-width="1"/>
+              <!-- 轴线 -->
+              <line x1="100" y1="100" x2="100" y2="40" stroke="rgba(255,182,193,.3)"/>
+              <line x1="100" y1="100" x2="152" y2="70" stroke="rgba(255,182,193,.3)"/>
+              <line x1="100" y1="100" x2="152" y2="130" stroke="rgba(255,182,193,.3)"/>
+              <line x1="100" y1="100" x2="100" y2="160" stroke="rgba(255,182,193,.3)"/>
+              <line x1="100" y1="100" x2="48" y2="130" stroke="rgba(255,182,193,.3)"/>
+              <line x1="100" y1="100" x2="48" y2="70" stroke="rgba(255,182,193,.3)"/>
+              <!-- 数据多边形（动态） -->
+              <polygon data-fjb-radar-poly points="100,80 117.3,90 117.3,110 100,120 82.7,110 82.7,90" fill="rgba(255,105,180,.32)" stroke="#ff1493" stroke-width="2"/>
+              <circle cx="100" cy="100" r="2.5" fill="#ff1493"/>
+              <!-- 标签 -->
+              <text x="100" y="32" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">冥想</text>
+              <text x="160" y="68" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">锻炼</text>
+              <text x="160" y="138" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">洞察</text>
+              <text x="100" y="176" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">伪装</text>
+              <text x="40" y="138" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">恢复</text>
+              <text x="40" y="68" text-anchor="middle" font-size="10" fill="#5a2a3a" font-weight="600">意志</text>
+            </svg>
+            <div class="fjb-radar-status">
+              <span class="fjb-pill" data-fjb-attr-total>已分配 30 / 30</span>
+              <span class="fjb-pill ok" data-fjb-attr-left>剩余 0</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- 步骤2：角色拓展 -->
+    <div class="fjb-pane" data-fjb-pane="2">
+      <article class="fjb-panel">
+        <h3>角色拓展</h3>
+        <p class="fjb-note">勾选希望在本局中登场的女性角色预设。默认全部启用（25 位）；取消勾选则该角色本局不会主动登场。</p>
+        <div class="fjb-choice-grid" data-fjb-char-grid>
+          <!-- 25 个角色由 JS 动态生成 -->
+        </div>
+      </article>
+    </div>
+
+    <!-- 步骤3：世界因子 -->
+    <div class="fjb-pane" data-fjb-pane="3">
+      <article class="fjb-panel">
+        <h3>世界因子</h3>
+        <p class="fjb-note">勾选启用预设世界因子，或点击"添加自定义因子"新建一条。因子会影响整局世界的运行规则。</p>
+        <div class="fjb-choice-grid" data-fjb-factor-grid>
+          <label class="fjb-check-choice selected" data-fjb-factor="全校唯一男生"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>全校唯一男生</strong><span>玩家是星月女子学院全校唯一的男性学生。</span></span></label>
+          <label class="fjb-check-choice selected" data-fjb-factor="假阴茎诅咒"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>假阴茎诅咒</strong><span>一件能够精准复刻玩家阴茎的假体被某位女性持有，被动使用将消耗玩家精力。</span></span></label>
+          <label class="fjb-check-choice selected" data-fjb-factor="高考倒计时"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>高考倒计时</strong><span>开局第 126 天为高考日，第 142 天成绩出炉，进入终局判定。</span></span></label>
+          <label class="fjb-check-choice" data-fjb-factor="传播链扩散"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>传播链扩散</strong><span>假阴茎会在女性之间传播，使用频率随传播扩散逐步升高。</span></span></label>
+          <label class="fjb-check-choice" data-fjb-factor="多维状态演化"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>多维状态演化</strong><span>女性角色具备理性/沉迷/学业压力/逃跑意识/理智五维状态，每日演化。</span></span></label>
+          <label class="fjb-check-choice" data-fjb-factor="生理周期与生育"><span class="fjb-check-box"></span><span class="fjb-check-body"><strong>生理周期与生育</strong><span>女性角色有完整生理周期，特定周期可能触发生育事件。</span></span></label>
+        </div>
+        <div class="fjb-actions" style="margin-top:10px">
+          <button type="button" class="fjb-btn" data-fjb-action="add-factor">+ 添加自定义因子</button>
+        </div>
+        <div class="fjb-choice-grid" data-fjb-custom-factor-list></div>
+      </article>
+    </div>
+
+    <!-- 步骤4：功能拓展 -->
+    <div class="fjb-pane" data-fjb-pane="4">
+      <article class="fjb-panel">
+        <h3>功能拓展</h3>
+        <p class="fjb-note">勾选启用本局的功能模块。取消勾选则该模块本局不注入；不影响其他卡内功能。</p>
+        <div class="fjb-switch-list" data-fjb-module-list">
+          <div class="fjb-switch-row" data-fjb-module="status_bar">
+            <div class="info"><strong>状态栏</strong><span>显示精力/理智/疑心/沉沦/金钱/阶段等核心数值。</span></div>
+            <div class="fjb-toggle on" data-fjb-toggle></div>
+          </div>
+          <div class="fjb-switch-row" data-fjb-module="control_center">
+            <div class="info"><strong>控制中心</strong><span>悬浮球入口，开关管理，主题切换。</span></div>
+            <div class="fjb-toggle on" data-fjb-toggle></div>
+          </div>
+          <div class="fjb-switch-row" data-fjb-module="event_notify">
+            <div class="info"><strong>事件通知</strong><span>关键事件触发时的弹窗提示（如假阴茎被使用、阶段晋升）。</span></div>
+            <div class="fjb-toggle on" data-fjb-toggle></div>
+          </div>
+          <div class="fjb-switch-row" data-fjb-module="shop">
+            <div class="info"><strong>商店系统</strong><span>购买补给品、道具、技能书等（预留）。</span></div>
+            <div class="fjb-toggle" data-fjb-toggle></div>
+          </div>
+          <div class="fjb-switch-row" data-fjb-module="task">
+            <div class="info"><strong>任务系统</strong><span>每日任务、主线任务追踪（预留）。</span></div>
+            <div class="fjb-toggle" data-fjb-toggle></div>
+          </div>
+          <div class="fjb-switch-row" data-fjb-module="rule">
+            <div class="info"><strong>规则系统</strong><span>LCG 骰子、技能对抗、疑心阶段解锁等高级规则。</span></div>
+            <div class="fjb-toggle on" data-fjb-toggle></div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- 步骤5：草稿管理 -->
+    <div class="fjb-pane" data-fjb-pane="5">
+      <article class="fjb-panel">
+        <h3>草稿管理</h3>
+        <p class="fjb-note">当前开局草稿会自动保存到浏览器 localStorage。可导出为 JSON 备份，或导入既有草稿覆盖当前。</p>
+        <div class="fjb-actions">
+          <button type="button" class="fjb-btn" data-fjb-action="export-draft">导出草稿 JSON</button>
+          <button type="button" class="fjb-btn" data-fjb-action="import-draft">导入草稿 JSON</button>
+          <button type="button" class="fjb-btn warn" data-fjb-action="clear-draft">清空草稿</button>
+        </div>
+        <input type="file" data-fjb-draft-file accept="application/json" class="fjb-hidden">
+        <div class="fjb-draft-box" data-fjb-draft-preview>暂无草稿数据。填写任意字段后将自动保存。</div>
+      </article>
+    </div>
+
+    <!-- 步骤6：开局确认 -->
+    <div class="fjb-pane" data-fjb-pane="6">
+      <article class="fjb-panel">
+        <h3>开局确认</h3>
+        <p class="fjb-note">请核对以下开局汇总。点击"开始游戏"后将向控制中心发送 <code>fjb-opening-confirm</code> 消息并写入玩家消息。</p>
+        <div class="fjb-summary" data-fjb-summary></div>
+      </article>
+      <article class="fjb-panel">
+        <h3>最终玩家消息预览</h3>
+        <p class="fjb-note">这是确认后将写入聊天输入框的玩家消息文本预览。</p>
+        <div class="fjb-final-preview" data-fjb-final-preview>等待生成最终消息。</div>
+        <div class="fjb-actions" style="margin-top:10px">
+          <button type="button" class="fjb-btn primary" data-fjb-action="start-game">开始游戏</button>
+          <button type="button" class="fjb-btn" data-fjb-action="open-control-center">控制中心</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- 向导底部导航 -->
+    <div class="fjb-wizard-actions">
+      <button type="button" class="fjb-btn" data-fjb-action="back-boot">返回封面</button>
+      <button type="button" class="fjb-btn" data-fjb-action="prev-step">上一步</button>
+      <button type="button" class="fjb-btn primary" data-fjb-action="next-step">下一步</button>
+      <button type="button" class="fjb-btn warn" data-fjb-action="go-step" data-step="6">直达确认</button>
+    </div>
+  </section>
+
+  <!-- ============ 视图3：workshop 工坊（简化版浮窗） ============ -->
+  <div class="fjb-workshop" data-fjb-workshop>
+    <div class="fjb-workshop-panel">
+      <div class="fjb-workshop-head">
+        <h3>✦ 创意工坊</h3>
+        <button type="button" class="fjb-workshop-close" data-fjb-action="close-workshop">×</button>
+      </div>
+      <div class="fjb-workshop-body">
+        <p>创意工坊是预留功能，用于浏览、导入、发布自定义内容包（身份模板、角色包、世界因子、功能拓展等）。</p>
+        <p>当前版本（v1.0）仅提供本地草稿导入导出，在线内容浏览与发布将在后续版本启用。</p>
+        <div class="fjb-workshop-placeholder">
+          🚧 在线工坊建设中 · 敬请期待<br>
+          <small style="display:block;margin-top:6px">可使用「草稿管理」页导入/导出本地 JSON</small>
+        </div>
+        <div class="fjb-actions" style="margin-top:14px">
+          <button type="button" class="fjb-btn" data-fjb-action="export-draft">导出当前草稿</button>
+          <button type="button" class="fjb-btn" data-fjb-action="close-workshop">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ===== 常量 =====
+  var DRAFT_KEY = 'fjb_opening_draft_v1';   // localStorage 键名
+  var TOTAL_ATTR = 30;                       // 六维属性总点数
+  var ATTR_MAX = 15;                         // 单项属性上限
+
+  // 25 个女性角色预设（与 [InitVar]初始变量.txt 对齐）
+  var FEMALE_CHARS = [
+    {id:'001', name:'叶知秋', tag:'文静·同班'},
+    {id:'002', name:'周思琪', tag:'文静·同班'},
+    {id:'003', name:'唐小糖', tag:'辣妹·同班'},
+    {id:'004', name:'小夜',   tag:'文静·同班'},
+    {id:'005', name:'张雨萱', tag:'文静·同班'},
+    {id:'006', name:'怜奈',   tag:'文静·同班'},
+    {id:'007', name:'林婉清', tag:'御姐·初始持有者'},
+    {id:'008', name:'林小艾', tag:'文静·同班'},
+    {id:'009', name:'柚子',   tag:'纯真·同班'},
+    {id:'010', name:'柳思雨', tag:'辣妹·同班'},
+    {id:'011', name:'桃桃',   tag:'纯真·同班'},
+    {id:'012', name:'欧阳雪', tag:'御姐·数学老师'},
+    {id:'013', name:'江月白', tag:'御姐·教师'},
+    {id:'014', name:'沈雨桐', tag:'熟女·校医'},
+    {id:'015', name:'白露',   tag:'运动·田径队'},
+    {id:'016', name:'秦雨',   tag:'文静·同桌'},
+    {id:'017', name:'苏婉清', tag:'熟女·教职工'},
+    {id:'018', name:'苏晴',   tag:'运动·学生会长'},
+    {id:'019', name:'赵灵儿', tag:'运动·同班'},
+    {id:'020', name:'铃',     tag:'文静·同班'},
+    {id:'021', name:'陆诗涵', tag:'熟女·教职工'},
+    {id:'022', name:'陈老师', tag:'御姐·班主任'},
+    {id:'023', name:'韩雪',   tag:'熟女·教职工'},
+    {id:'024', name:'顾小曼', tag:'辣妹·同班'},
+    {id:'025', name:'慕容晴', tag:'文静·同班'}
+  ];
+
+  // 默认草稿
+  var DEFAULT_DRAFT = {
+    player_callname: '',
+    player_background: '',
+    player_appearance: '',
+    player_skills: '',
+    attrs: { meditation:5, exercise:5, insight:5, disguise:5, recovery:5, willpower:5 },
+    enabled_chars: FEMALE_CHARS.map(function(c){return c.id;}), // 默认全启用
+    enabled_factors: ['全校唯一男生','假阴茎诅咒','高考倒计时'],
+    custom_factors: [],
+    modules: { status_bar:true, control_center:true, event_notify:true, shop:false, task:false, rule:true },
+    agreement: false
+  };
+
+  // ===== 工具方法 =====
+  function $(sel, ctx){ return (ctx||document).querySelector(sel); }
+  function $all(sel, ctx){ return Array.prototype.slice.call((ctx||document).querySelectorAll(sel)); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  // 读取草稿
+  function loadDraft(){
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return clone(DEFAULT_DRAFT);
+      var parsed = JSON.parse(raw);
+      // 合并默认值（防止字段缺失）
+      var merged = clone(DEFAULT_DRAFT);
+      for (var k in parsed) {
+        if (Object.prototype.hasOwnProperty.call(parsed, k)) {
+          if (typeof parsed[k] === 'object' && parsed[k] !== null && !Array.isArray(parsed[k])) {
+            for (var k2 in parsed[k]) {
+              if (Object.prototype.hasOwnProperty.call(parsed[k], k2)) merged[k][k2] = parsed[k][k2];
+            }
+          } else {
+            merged[k] = parsed[k];
+          }
+        }
+      }
+      return merged;
+    } catch(e) { return clone(DEFAULT_DRAFT); }
+  }
+
+  // 保存草稿
+  function saveDraft(draft){
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); return true; }
+    catch(e) { return false; }
+  }
+
+  // 当前草稿
+  var draft = loadDraft();
+
+  // ===== 初始化角色卡列表 =====
+  function renderCharGrid(){
+    var grid = $('[data-fjb-char-grid]');
+    if (!grid) return;
+    grid.innerHTML = '';
+    FEMALE_CHARS.forEach(function(c){
+      var enabled = draft.enabled_chars.indexOf(c.id) >= 0;
+      var el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'fjb-choice' + (enabled ? ' selected' : '');
+      el.setAttribute('data-fjb-char', c.id);
+      el.innerHTML = '<strong>' + c.name + '</strong><span>' + c.tag + '</span>';
+      el.addEventListener('click', function(){ toggleChar(c.id); });
+      grid.appendChild(el);
+    });
+  }
+
+  function toggleChar(id){
+    var idx = draft.enabled_chars.indexOf(id);
+    if (idx >= 0) draft.enabled_chars.splice(idx, 1);
+    else draft.enabled_chars.push(id);
+    saveDraft(draft);
+    renderCharGrid();
+  }
+
+  // ===== 初始化世界因子 =====
+  function renderFactors(){
+    $all('[data-fjb-factor]').forEach(function(el){
+      var v = el.getAttribute('data-fjb-factor');
+      var on = draft.enabled_factors.indexOf(v) >= 0;
+      el.classList.toggle('selected', on);
+      el.onclick = function(){
+        var i = draft.enabled_factors.indexOf(v);
+        if (i >= 0) draft.enabled_factors.splice(i,1);
+        else draft.enabled_factors.push(v);
+        saveDraft(draft);
+        renderFactors();
+      };
+    });
+    // 自定义因子
+    var list = $('[data-fjb-custom-factor-list]');
+    if (list) {
+      list.innerHTML = '';
+      draft.custom_factors.forEach(function(f, idx){
+        var el = document.createElement('label');
+        el.className = 'fjb-check-choice selected';
+        el.innerHTML = '<span class="fjb-check-box"></span><span class="fjb-check-body"><strong>' + escapeHtml(f.name) + '</strong><span>' + escapeHtml(f.desc || '自定义因子') + '</span></span>';
+        el.onclick = function(e){
+          // 点击切换启用/禁用
+          var i = draft.enabled_factors.indexOf(f.name);
+          if (i >= 0) draft.enabled_factors.splice(i,1);
+          else draft.enabled_factors.push(f.name);
+          saveDraft(draft);
+          renderFactors();
+        };
+        // 双击删除
+        el.ondblclick = function(){
+          if (confirm('删除自定义因子「' + f.name + '」？')) {
+            draft.custom_factors.splice(idx, 1);
+            var ei = draft.enabled_factors.indexOf(f.name);
+            if (ei >= 0) draft.enabled_factors.splice(ei, 1);
+            saveDraft(draft);
+            renderFactors();
+          }
+        };
+        list.appendChild(el);
+      });
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+
+  // ===== 初始化功能模块开关 =====
+  function renderModules(){
+    $all('[data-fjb-module]').forEach(function(row){
+      var key = row.getAttribute('data-fjb-module');
+      var toggle = $('[data-fjb-toggle]', row);
+      var on = !!draft.modules[key];
+      toggle.classList.toggle('on', on);
+      toggle.onclick = function(){
+        draft.modules[key] = !draft.modules[key];
+        saveDraft(draft);
+        renderModules();
+      };
+    });
+  }
+
+  // ===== 六维属性 + 雷达图 =====
+  var ATTR_KEYS = ['meditation','exercise','insight','disguise','recovery','willpower'];
+  // 雷达图 6 个顶点坐标（围绕中心 100,100，半径 60）
+  var ATTR_POINTS = [
+    {x:100, y:40},   // 冥想（上）
+    {x:152, y:70},   // 锻炼（右上）
+    {x:152, y:130},  // 洞察（右下）
+    {x:100, y:160},  // 伪装（下）
+    {x:48,  y:130},  // 恢复（左下）
+    {x:48,  y:70}    // 意志（左上）
+  ];
+
+  function attrTotal(){
+    return ATTR_KEYS.reduce(function(s,k){return s + (draft.attrs[k]||0);}, 0);
+  }
+
+  function renderAttrs(){
+    $all('[data-fjb-attr]').forEach(function(input){
+      var k = input.getAttribute('data-fjb-attr');
+      input.value = draft.attrs[k] || 0;
+      var b = input.parentNode.querySelector('b');
+      if (b) b.textContent = input.value;
+      input.oninput = function(){
+        var v = parseInt(input.value, 10) || 0;
+        // 限制：当前项调整时，确保总和不超过 TOTAL_ATTR
+        var others = attrTotal() - (draft.attrs[k]||0);
+        if (others + v > TOTAL_ATTR) {
+          v = TOTAL_ATTR - others;
+          if (v < 0) v = 0;
+          input.value = v;
+        }
+        draft.attrs[k] = v;
+        if (b) b.textContent = v;
+        saveDraft(draft);
+        updateRadar();
+      };
+    });
+    updateRadar();
+  }
+
+  function updateRadar(){
+    var total = attrTotal();
+    var left = TOTAL_ATTR - total;
+    $('[data-fjb-attr-total]').textContent = '已分配 ' + total + ' / ' + TOTAL_ATTR;
+    var leftEl = $('[data-fjb-attr-left]');
+    leftEl.textContent = '剩余 ' + left;
+    leftEl.className = 'fjb-pill ' + (left === 0 ? 'ok' : (left < 0 ? 'danger' : 'warn'));
+
+    // 计算雷达图多边形顶点
+    var pts = ATTR_KEYS.map(function(k, i){
+      var v = draft.attrs[k] || 0;
+      var ratio = v / ATTR_MAX;  // 0~1
+      var cx = 100, cy = 100;
+      var px = ATTR_POINTS[i].x, py = ATTR_POINTS[i].y;
+      // 从中心向顶点插值
+      var x = cx + (px - cx) * ratio;
+      var y = cy + (py - cy) * ratio;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+
+    var poly = $('[data-fjb-radar-poly]');
+    if (poly) poly.setAttribute('points', pts);
+  }
+
+  // ===== 文本字段绑定 =====
+  function bindFields(){
+    $all('[data-fjb-field]').forEach(function(input){
+      var k = input.getAttribute('data-fjb-field');
+      if (draft[k] != null) input.value = draft[k];
+      input.addEventListener('input', function(){
+        draft[k] = input.value;
+        saveDraft(draft);
+      });
+    });
+  }
+
+  // ===== 协议复选框 =====
+  function bindAgreement(){
+    var cb = $('[data-fjb-agreement]');
+    var btn = $('[data-fjb-action="enter-wizard"]');
+    cb.checked = !!draft.agreement;
+    btn.disabled = !cb.checked;
+    cb.addEventListener('change', function(){
+      draft.agreement = cb.checked;
+      saveDraft(draft);
+      btn.disabled = !cb.checked;
+    });
+  }
+
+  // ===== 依赖检测 =====
+  function checkDeps(){
+    var deps = [
+      {name:'MVU 变量系统', check: function(){ return typeof window.getVariables === 'function' || typeof window.getvar === 'function'; }},
+      {name:'控制中心',     check: function(){ return !!document.querySelector('[data-fjb-cc-loaded]') || typeof window.fjbCC !== 'undefined'; }},
+      {name:'状态栏',       check: function(){ return !!document.querySelector('[data-fjb-status-bar]') || typeof window.fjbStatusBar !== 'undefined'; }},
+      {name:'世界书注入',   check: function(){ return typeof window.getvar === 'function'; }}
+    ];
+
+    var okCount = 0;
+    var list = $('[data-fjb-dep-list]');
+    list.innerHTML = '';
+    deps.forEach(function(d){
+      var ok = false;
+      try { ok = !!d.check(); } catch(e) { ok = false; }
+      if (ok) okCount++;
+      var el = document.createElement('div');
+      el.className = 'fjb-dep-item';
+      el.innerHTML = '<span class="fjb-dep-dot ' + (ok?'ok':'warn') + '"></span>' +
+                     '<span class="fjb-dep-name">' + d.name + '</span>' +
+                     '<span class="fjb-dep-tag ' + (ok?'ok':'warn') + '">' + (ok?'已就绪':'待确认') + '</span>';
+      list.appendChild(el);
+    });
+
+    $('[data-fjb-ready-count]').textContent = okCount + '/4';
+    $('[data-fjb-ready-meter]').style.width = (okCount / 4 * 100) + '%';
+    var summary = $('[data-fjb-dep-summary]');
+    if (okCount === 4) {
+      summary.textContent = '全部就绪';
+      summary.className = 'fjb-pill ok';
+    } else {
+      summary.textContent = okCount + '/4 就绪';
+      summary.className = 'fjb-pill warn';
+    }
+  }
+
+  // ===== 视图切换 =====
+  function switchView(name){
+    $all('.fjb-view').forEach(function(v){ v.classList.remove('active'); });
+    var target = $('.fjb-view-' + name);
+    if (target) target.classList.add('active');
+    document.querySelector('[data-fjb-opening]').setAttribute('data-fjb-view', name);
+    if (name === 'wizard') {
+      goStep(1);
+    }
+  }
+
+  // ===== 步骤导航 =====
+  var currentStep = 1;
+  function goStep(n){
+    n = parseInt(n, 10) || 1;
+    if (n < 1) n = 1;
+    if (n > 6) n = 6;
+    currentStep = n;
+    $all('.fjb-pane').forEach(function(p){ p.classList.remove('active'); });
+    var pane = $('[data-fjb-pane="' + n + '"]');
+    if (pane) pane.classList.add('active');
+
+    $all('.fjb-step').forEach(function(s){
+      var sn = parseInt(s.getAttribute('data-step'), 10);
+      s.classList.toggle('active', sn === n);
+      s.classList.toggle('done', sn < n);
+    });
+
+    // 进度条
+    $('[data-fjb-progress-bar]').style.width = (n / 6 * 100) + '%';
+
+    // 如果是第6步，刷新汇总
+    if (n === 6) {
+      renderSummary();
+    }
+    // 如果是第5步，刷新草稿预览
+    if (n === 5) {
+      renderDraftPreview();
+    }
+  }
+
+  // ===== 草稿预览 =====
+  function renderDraftPreview(){
+    var box = $('[data-fjb-draft-preview]');
+    if (!box) return;
+    var json = JSON.stringify(draft, null, 2);
+    box.textContent = json.length > 800 ? json.slice(0, 800) + '\n…（共 ' + json.length + ' 字节）' : json;
+  }
+
+  // ===== 开局汇总 =====
+  function renderSummary(){
+    var sum = $('[data-fjb-summary]');
+    if (!sum) return;
+    var charNames = FEMALE_CHARS
+      .filter(function(c){ return draft.enabled_chars.indexOf(c.id) >= 0; })
+      .map(function(c){ return c.name; })
+      .join('、') || '（无）';
+
+    var factors = draft.enabled_factors.join('、') || '（无）';
+    var modules = Object.keys(draft.modules)
+      .filter(function(k){ return draft.modules[k]; })
+      .map(function(k){
+        return ({status_bar:'状态栏',control_center:'控制中心',event_notify:'事件通知',shop:'商店',task:'任务',rule:'规则'})[k];
+      })
+      .join('、') || '（无）';
+
+    var total = attrTotal();
+    var attrs = ATTR_KEYS.map(function(k){
+      return ({meditation:'冥想',exercise:'锻炼',insight:'洞察',disguise:'伪装',recovery:'恢复',willpower:'意志'})[k] + ' ' + draft.attrs[k];
+    }).join(' / ');
+
+    sum.innerHTML = '';
+    var rows = [
+      ['称呼', draft.player_callname || '未填写'],
+      ['背景', draft.player_background || '未填写'],
+      ['外貌', draft.player_appearance || '未填写'],
+      ['技能', draft.player_skills || '未填写'],
+      ['六维属性', attrs + '（合计 ' + total + '/30）'],
+      ['启用角色', '共 ' + draft.enabled_chars.length + ' 位：' + charNames],
+      ['世界因子', factors],
+      ['功能模块', modules]
+    ];
+    rows.forEach(function(r){
+      var row = document.createElement('div');
+      row.className = 'fjb-summary-row';
+      row.innerHTML = '<span class="k">' + r[0] + '</span><span class="v">' + escapeHtml(r[1]) + '</span>';
+      sum.appendChild(row);
+    });
+
+    // 最终消息预览
+    renderFinalPreview();
+  }
+
+  function renderFinalPreview(){
+    var box = $('[data-fjb-final-preview]');
+    if (!box) return;
+    var lines = [];
+    lines.push('【开局确认】');
+    lines.push('称呼：' + (draft.player_callname || '玩家'));
+    if (draft.player_background) lines.push('背景：' + draft.player_background);
+    if (draft.player_appearance) lines.push('外貌：' + draft.player_appearance);
+    if (draft.player_skills) lines.push('技能：' + draft.player_skills);
+    var attrs = ATTR_KEYS.map(function(k){
+      return ({meditation:'冥想',exercise:'锻炼',insight:'洞察',disguise:'伪装',recovery:'恢复',willpower:'意志'})[k] + '=' + draft.attrs[k];
+    }).join(' / ');
+    lines.push('属性：' + attrs + '（总 ' + attrTotal() + '/30）');
+    lines.push('启用角色：' + FEMALE_CHARS.filter(function(c){return draft.enabled_chars.indexOf(c.id)>=0;}).map(function(c){return c.name;}).join('、'));
+    lines.push('世界因子：' + draft.enabled_factors.join('、'));
+    var mods = Object.keys(draft.modules).filter(function(k){return draft.modules[k];}).map(function(k){
+      return ({status_bar:'状态栏',control_center:'控制中心',event_notify:'事件通知',shop:'商店',task:'任务',rule:'规则'})[k];
+    });
+    lines.push('功能模块：' + mods.join('、'));
+    lines.push('');
+    lines.push('【确认开始游戏 · 高三下学期 2 月开学 · 距高考 126 天】');
+    box.textContent = lines.join('\n');
+  }
+
+  // ===== 草稿导入导出 =====
+  function exportDraft(){
+    var json = JSON.stringify(draft, null, 2);
+    var blob = new Blob([json], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'fjb-opening-draft-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importDraft(){
+    var input = $('[data-fjb-draft-file]');
+    input.click();
+  }
+
+  function handleFileSelect(e){
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try {
+        var parsed = JSON.parse(ev.target.result);
+        draft = parsed;
+        saveDraft(draft);
+        refreshAll();
+        alert('草稿导入成功！');
+      } catch(err) {
+        alert('导入失败：JSON 解析错误');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function clearDraft(){
+    if (!confirm('确定清空当前草稿？此操作不可撤销。')) return;
+    draft = clone(DEFAULT_DRAFT);
+    saveDraft(draft);
+    refreshAll();
+  }
+
+  // ===== 添加自定义因子 =====
+  function addCustomFactor(){
+    var name = prompt('请输入因子名称：', '自定义因子');
+    if (!name) return;
+    var desc = prompt('请输入因子描述（可留空）：', '') || '';
+    draft.custom_factors.push({name:name, desc:desc});
+    if (draft.enabled_factors.indexOf(name) < 0) draft.enabled_factors.push(name);
+    saveDraft(draft);
+    renderFactors();
+  }
+
+  // ===== 开始游戏：发送 postMessage =====
+  function startGame(){
+    var payload = {
+      type: 'fjb-opening-confirm',
+      draft: draft,
+      timestamp: Date.now()
+    };
+    // 向父窗口（控制中心/酒馆宿主）发送确认消息
+    try { window.parent.postMessage(payload, '*'); } catch(e) {}
+    // 同时向当前窗口派发（便于同层监听）
+    try { window.postMessage(payload, '*'); } catch(e) {}
+
+    // 反馈UI
+    var btn = $('[data-fjb-action="start-game"]');
+    if (btn) {
+      btn.textContent = '✓ 已发送开局确认';
+      btn.disabled = true;
+      setTimeout(function(){
+        btn.textContent = '开始游戏';
+        btn.disabled = false;
+      }, 2000);
+    }
+  }
+
+  // ===== 控制中心通信 =====
+  function requestCCState(){
+    try { window.parent.postMessage({type:'fjb-cc-get-state'}, '*'); } catch(e) {}
+  }
+
+  // 监听来自控制中心的消息
+  window.addEventListener('message', function(event){
+    if (!event || !event.data) return;
+    var data = event.data;
+    // 控制中心返回的状态
+    if (data.type === 'fjb-cc-state' && data.state) {
+      // 可以根据控制中心状态更新 UI
+      if (data.state.switches && typeof data.state.switches.opening === 'boolean') {
+        // 如果控制中心关闭了开局页开关，可以提示
+      }
+    }
+  });
+
+  // ===== 工坊浮窗 =====
+  function openWorkshop(){
+    $('[data-fjb-workshop]').classList.add('active');
+  }
+  function closeWorkshop(){
+    $('[data-fjb-workshop]').classList.remove('active');
+  }
+
+  // ===== 绑定所有按钮 =====
+  function bindActions(){
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-fjb-action]');
+      if (!btn) return;
+      var action = btn.getAttribute('data-fjb-action');
+
+      // 需要协议的操作
+      if (btn.hasAttribute('data-fjb-requires-agreement')) {
+        if (!draft.agreement) {
+          alert('请先阅读并同意协议');
+          return;
+        }
+      }
+
+      switch(action){
+        case 'enter-wizard':
+          switchView('wizard');
+          break;
+        case 'check-deps':
+          checkDeps();
+          break;
+        case 'go-step':
+          goStep(btn.getAttribute('data-step'));
+          break;
+        case 'prev-step':
+          goStep(currentStep - 1);
+          break;
+        case 'next-step':
+          goStep(currentStep + 1);
+          break;
+        case 'back-boot':
+          switchView('boot');
+          break;
+        case 'add-factor':
+          addCustomFactor();
+          break;
+        case 'export-draft':
+          exportDraft();
+          break;
+        case 'import-draft':
+          importDraft();
+          break;
+        case 'clear-draft':
+          clearDraft();
+          break;
+        case 'start-game':
+          startGame();
+          break;
+        case 'open-control-center':
+          try { window.parent.postMessage({type:'fjb-open-control-center'}, '*'); } catch(e) {}
+          break;
+        case 'open-workshop':
+          openWorkshop();
+          break;
+        case 'close-workshop':
+          closeWorkshop();
+          break;
+      }
+    });
+
+    // 文件选择
+    var fileInput = $('[data-fjb-draft-file]');
+    if (fileInput) fileInput.addEventListener('change', handleFileSelect);
+  }
+
+  // ===== 刷新所有 UI =====
+  function refreshAll(){
+    bindFields();
+    renderAttrs();
+    renderCharGrid();
+    renderFactors();
+    renderModules();
+    bindAgreement();
+    renderDraftPreview();
+  }
+
+  // ===== 初始化 =====
+  function init(){
+    refreshAll();
+    bindActions();
+    // 延迟检测依赖（等待宿主环境就绪）
+    setTimeout(checkDeps, 400);
+    // 请求控制中心状态
+    setTimeout(requestCCState, 600);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

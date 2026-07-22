@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>变量同步中 · 不要玩弄我的鸡吧</title>
+<style>
+:root{
+  --bg-0:#fff0f5;--bg-1:#ffe4ec;
+  --c-text:#5a3a4a;--c-dim:rgba(90,58,74,.65);--c-mute:rgba(90,58,74,.45);
+  --c-accent:#ff69b4;--c-pink:#ff1493;--c-deep:#ff1493;
+  --c-border:rgba(255,182,193,.4);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fs-xs:clamp(10px,2vw,11px);--fs-sm:clamp(11px,2.2vw,12px);--fs-base:clamp(12px,2.5vw,13px);--fs-md:clamp(13px,2.8vw,15px);--fs-lg:clamp(15px,3.2vw,17px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:var(--font);color:var(--c-text);background:transparent;font-size:var(--fs-base);line-height:1.55}
+@keyframes omni-pulse{
+  0%{box-shadow:0 0 0 0 rgba(255,105,180,.45),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+  70%{box-shadow:0 0 0 12px rgba(255,105,180,0),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+  100%{box-shadow:0 0 0 0 rgba(255,105,180,0),0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+}
+@keyframes omni-blink{
+  0%,100%{opacity:1}
+  50%{opacity:.35}
+}
+@keyframes omni-spin{to{transform:rotate(360deg)}}
+@keyframes omni-dots{
+  0%,20%{content:"·"}
+  40%{content:"··"}
+  60%,100%{content:"···"}
+}
+@keyframes omni-bar{
+  0%{transform:translateX(-100%)}
+  50%{transform:translateX(20%)}
+  100%{transform:translateX(120%)}
+}
+.omni-progress{
+  position:relative;
+  background:linear-gradient(135deg,rgba(255,240,245,.55),rgba(255,228,236,.45));
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid var(--c-border);
+  border-radius:18px;
+  padding:16px;
+  margin:8px 0;
+  box-shadow:0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5);
+  text-shadow:0 1px 4px rgba(255,255,255,.4);
+  animation:omni-pulse 1.8s ease-out infinite;
+  overflow:hidden;
+}
+.omni-progress::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 30% 0%,rgba(255,105,180,.10),transparent 55%);
+}
+.omni-head{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px dashed var(--c-border);margin-bottom:14px;position:relative}
+.omni-spinner{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  border:3px solid rgba(255,182,193,.3);
+  border-top-color:var(--c-accent);
+  border-right-color:var(--c-pink);
+  animation:omni-spin .8s linear infinite;
+}
+.omni-title{
+  font-size:var(--fs-md);font-weight:700;color:var(--c-deep);letter-spacing:1px;
+  display:inline-flex;align-items:center;gap:2px;
+}
+.omni-title::after{
+  content:"·";animation:omni-dots 1.2s steps(1,end) infinite;
+  color:var(--c-accent);font-weight:700;margin-left:2px;min-width:1em;text-align:left;
+}
+.omni-sub{font-size:var(--fs-xs);color:var(--c-dim);margin-left:auto;white-space:nowrap;animation:omni-blink 1.4s ease-in-out infinite}
+.omni-bar-wrap{
+  position:relative;height:10px;border-radius:6px;
+  background:rgba(255,182,193,.18);
+  border:1px solid rgba(255,182,193,.25);
+  overflow:hidden;margin-bottom:12px;
+}
+.omni-bar-track{
+  position:absolute;inset:0;border-radius:6px;overflow:hidden;
+}
+.omni-bar-shine{
+  position:absolute;top:0;bottom:0;width:40%;
+  background:linear-gradient(90deg,transparent,rgba(255,105,180,.6),rgba(255,20,147,.8),rgba(255,105,180,.6),transparent);
+  animation:omni-bar 1.4s ease-in-out infinite;
+  border-radius:6px;
+}
+.omni-steps{display:flex;flex-direction:column;gap:6px;position:relative}
+.omni-step{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;border-radius:10px;
+  background:rgba(255,255,255,.35);
+  border:1px solid rgba(255,182,193,.2);
+  font-size:var(--fs-sm);
+}
+.omni-step .dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:var(--c-accent);
+  animation:omni-blink 1s ease-in-out infinite;
+}
+.omni-step .dot.done{background:var(--c-pink);animation:none;opacity:.6}
+.omni-step .dot.wait{background:rgba(255,182,193,.4);animation:none}
+.omni-step .label{color:var(--c-dim);flex:1}
+.omni-step .label.active{color:var(--c-deep);font-weight:600}
+.omni-step .label.done{color:var(--c-mute);text-decoration:line-through;text-decoration-color:rgba(255,107,138,.4)}
+.omni-step .status{font-size:var(--fs-xs);color:var(--c-accent);font-weight:600;animation:omni-blink 1.4s ease-in-out infinite}
+.omni-step .status.done{color:var(--c-mute);animation:none}
+.omni-hint{
+  font-size:var(--fs-xs);color:var(--c-mute);text-align:center;
+  margin-top:10px;font-style:italic;animation:omni-blink 1.6s ease-in-out infinite;
+}
+@media(max-width:480px){
+  .omni-step{padding:5px 8px}
+}
+</style>
+</head>
+<body>
+<div class="omni-progress">
+  <div class="omni-head">
+    <div class="omni-spinner"></div>
+    <div class="omni-title">变量同步中</div>
+    <div class="omni-sub">处理中</div>
+  </div>
+  <div class="omni-bar-wrap">
+    <div class="omni-bar-track">
+      <div class="omni-bar-shine"></div>
+    </div>
+  </div>
+  <div class="omni-steps">
+    <div class="omni-step">
+      <span class="dot done"></span>
+      <span class="label done">解析变量更新块</span>
+      <span class="status done">完成</span>
+    </div>
+    <div class="omni-step">
+      <span class="dot"></span>
+      <span class="label active">合并字段至 MVU 结构</span>
+      <span class="status">进行中</span>
+    </div>
+    <div class="omni-step">
+      <span class="dot wait"></span>
+      <span class="label">写入状态栏数据</span>
+      <span class="status">等待</span>
+    </div>
+  </div>
+  <div class="omni-hint">正在同步本次变量变更，请稍候…</div>
+</div>
+</body>
+</html>
+```

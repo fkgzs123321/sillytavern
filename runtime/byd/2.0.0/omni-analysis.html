@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>变量预分析 · 不要玩弄我的鸡吧</title>
+<style>
+:root{
+  --bg-0:#fff0f5;--bg-1:#ffe4ec;
+  --c-text:#5a3a4a;--c-dim:rgba(90,58,74,.65);--c-mute:rgba(90,58,74,.45);
+  --c-accent:#ff69b4;--c-pink:#ff1493;--c-deep:#ff1493;
+  --c-border:rgba(255,182,193,.4);
+  --c-add:#ff69b4;--c-sub:#ff6b8a;--c-eq:#ff9ec4;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fs-xs:clamp(10px,2vw,11px);--fs-sm:clamp(11px,2.2vw,12px);--fs-base:clamp(12px,2.5vw,13px);--fs-md:clamp(13px,2.8vw,15px);--fs-lg:clamp(15px,3.2vw,17px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:var(--font);color:var(--c-text);background:transparent;font-size:var(--fs-base);line-height:1.55}
+.omni-analysis{
+  position:relative;
+  background:linear-gradient(135deg,rgba(255,240,245,.55),rgba(255,228,236,.45));
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid var(--c-border);
+  border-radius:18px;
+  padding:14px 16px 12px;
+  margin:8px 0;
+  box-shadow:0 6px 24px rgba(255,105,180,.18),inset 0 1px 0 rgba(255,255,255,.5);
+  text-shadow:0 1px 4px rgba(255,255,255,.4);
+  overflow:hidden;
+}
+.omni-analysis::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 0% 0%,rgba(255,105,180,.10),transparent 60%),
+             radial-gradient(circle at 100% 100%,rgba(255,20,147,.08),transparent 55%);
+}
+.omni-head{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px dashed var(--c-border);margin-bottom:10px;position:relative}
+.omni-icon{
+  width:30px;height:30px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#ff69b4,#ff1493);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;
+  box-shadow:0 2px 8px rgba(255,105,180,.4);
+}
+.omni-title{font-size:var(--fs-md);font-weight:700;color:var(--c-deep);letter-spacing:1px}
+.omni-sub{font-size:var(--fs-xs);color:var(--c-dim);margin-left:auto;white-space:nowrap}
+.omni-list{display:flex;flex-direction:column;gap:6px;position:relative}
+.omni-row{
+  display:grid;grid-template-columns:minmax(80px,1.2fr) auto auto auto;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:12px;
+  background:rgba(255,255,255,.4);
+  border:1px solid rgba(255,182,193,.25);
+  font-size:var(--fs-sm);
+}
+.omni-row:hover{background:rgba(255,255,255,.55)}
+.omni-key{font-weight:600;color:var(--c-deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.omni-old{color:var(--c-mute);text-decoration:line-through;text-decoration-color:rgba(255,107,138,.5);font-size:var(--fs-xs)}
+.omni-arrow{color:var(--c-accent);font-size:var(--fs-xs);font-weight:700}
+.omni-new{font-weight:700;color:var(--c-accent)}
+.omni-delta{
+  font-size:var(--fs-xs);font-weight:700;padding:1px 7px;border-radius:8px;justify-self:start;white-space:nowrap;
+}
+.omni-delta.up{background:rgba(255,105,180,.18);color:var(--c-add);border:1px solid rgba(255,105,180,.35)}
+.omni-delta.down{background:rgba(255,107,138,.18);color:var(--c-sub);border:1px solid rgba(255,107,138,.35)}
+.omni-delta.eq{background:rgba(255,158,196,.15);color:var(--c-eq);border:1px solid rgba(255,158,196,.3)}
+.omni-empty{padding:18px 8px;text-align:center;color:var(--c-mute);font-size:var(--fs-sm)}
+.omni-foot{
+  display:flex;gap:8px;align-items:center;justify-content:flex-end;
+  margin-top:12px;padding-top:10px;border-top:1px dashed var(--c-border);position:relative;
+}
+.omni-btn{
+  min-height:38px;padding:7px 18px;border-radius:12px;cursor:pointer;
+  font-family:var(--font);font-size:var(--fs-sm);font-weight:600;
+  border:1px solid var(--c-border);
+  background:rgba(255,255,255,.5);
+  color:var(--c-deep);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:all .2s;display:inline-flex;align-items:center;gap:5px;
+}
+.omni-btn:hover{background:rgba(255,228,236,.7);border-color:var(--c-accent)}
+.omni-btn.primary{
+  background:linear-gradient(135deg,#ff69b4,#ff1493);
+  color:#fff;border-color:transparent;
+  box-shadow:0 3px 12px rgba(255,105,180,.35);
+}
+.omni-btn.primary:hover{box-shadow:0 4px 16px rgba(255,20,147,.45);transform:translateY(-1px)}
+.omni-hint{font-size:var(--fs-xs);color:var(--c-mute);margin-right:auto;font-style:italic}
+@media(max-width:480px){
+  .omni-row{grid-template-columns:1fr auto auto;gap:6px}
+  .omni-old{display:none}
+  .omni-arrow{display:none}
+  .omni-new{grid-column:2}
+  .omni-delta{grid-column:3}
+}
+</style>
+</head>
+<body>
+<div class="omni-analysis">
+  <div class="omni-head">
+    <div class="omni-icon">⚙</div>
+    <div class="omni-title">变量预分析</div>
+    <div class="omni-sub">共 4 项变更</div>
+  </div>
+  <div class="omni-list">
+    <div class="omni-row">
+      <span class="omni-key">stats.energy</span>
+      <span class="omni-old">75</span>
+      <span class="omni-arrow">→</span>
+      <span class="omni-new">58</span>
+      <span class="omni-delta down">-17</span>
+    </div>
+    <div class="omni-row">
+      <span class="omni-key">stats.suspicion</span>
+      <span class="omni-old">42</span>
+      <span class="omni-arrow">→</span>
+      <span class="omni-new">48</span>
+      <span class="omni-delta up">+6</span>
+    </div>
+    <div class="omni-row">
+      <span class="omni-key">stats.corruption</span>
+      <span class="omni-old">15</span>
+      <span class="omni-arrow">→</span>
+      <span class="omni-new">22</span>
+      <span class="omni-delta up">+7</span>
+    </div>
+    <div class="omni-row">
+      <span class="omni-key">use_stage.today_uses</span>
+      <span class="omni-old">3</span>
+      <span class="omni-arrow">→</span>
+      <span class="omni-new">4</span>
+      <span class="omni-delta up">+1</span>
+    </div>
+  </div>
+  <div class="omni-foot">
+    <span class="omni-hint">预览本次变量变更</span>
+    <button class="omni-btn" type="button">✎ 编辑</button>
+    <button class="omni-btn primary" type="button">⟲ 重 roll</button>
+  </div>
+</div>
+</body>
+</html>
+```
