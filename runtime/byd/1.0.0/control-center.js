@@ -25,6 +25,19 @@ $(async () => {
   // 默认主题
   var DEFAULT_THEME = 'pink';
 
+  // ===== 云端 runtime 配置（对齐星月多源容错架构） =====
+  var RT_VERSION = '1.0.0';
+  var RT_REVISION = '20260722-100-r1';
+  var REPO = 'fkgzs123321/sillytavern';
+  var RT_PATH = '/runtime/byd/' + RT_VERSION;
+  // 多源 CDN（按优先级排序，单源超时 6 秒）
+  var CDN_SOURCES = [
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@main' + RT_PATH,
+    'https://testingcf.jsdelivr.net/gh/' + REPO + '@main' + RT_PATH,
+    'https://raw.githubusercontent.com/' + REPO + '/main' + RT_PATH
+  ];
+  var cachedStatusBarHTML = null; // 云端状态栏缓存
+
   // ===== 持久化层 =====
   // 使用酒馆助手脚本变量存储（不污染chat变量）
   function readPersisted() {
@@ -137,6 +150,113 @@ $(async () => {
       if (window.parent && window.parent.document) return window.parent.document;
     } catch (e) {}
     return document;
+  }
+
+  // ===== 云端加载（多源容错，对齐星月 fetchHudBody） =====
+  async function fetchFromCDN(filename, timeoutMs) {
+    timeoutMs = timeoutMs || 6000;
+    for (var i = 0; i < CDN_SOURCES.length; i++) {
+      var url = CDN_SOURCES[i] + '/' + filename;
+      try {
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, timeoutMs);
+        var resp = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        if (resp.ok) {
+          var text = await resp.text();
+          if (text && text.length > 100) {
+            console.log('[假阴茎卡] CDN加载成功:', filename, '源:', i, '大小:', text.length);
+            return text;
+          }
+        }
+      } catch (e) {
+        console.warn('[假阴茎卡] CDN源' + i + '失败:', filename, e.message);
+      }
+    }
+    return null;
+  }
+
+  // 加载云端状态栏 HTML（带缓存）
+  async function loadStatusBarHTML() {
+    if (cachedStatusBarHTML) return cachedStatusBarHTML;
+    var html = await fetchFromCDN('status-bar.html', 6000);
+    if (html) {
+      cachedStatusBarHTML = html;
+      return html;
+    }
+    console.warn('[假阴茎卡] 云端状态栏加载失败，使用卡内兜底');
+    return getFallbackStatusBarHTML();
+  }
+
+  // 检查云端版本
+  async function checkRemoteVersion() {
+    var raw = await fetchFromCDN('manifest.json', 4000);
+    if (raw) {
+      try {
+        var m = JSON.parse(raw);
+        console.log('[假阴茎卡] 云端版本:', m.version, m.revision);
+        return m;
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  // ===== 状态栏注入（找到挂载点，创建 iframe） =====
+  async function injectStatusBars() {
+    var html = await loadStatusBarHTML();
+    if (!html) return;
+
+    // 在顶层文档和当前文档中查找挂载点
+    var docs = [document];
+    try { if (window.parent && window.parent.document) docs.push(window.parent.document); } catch (e) {}
+
+    docs.forEach(function (doc) {
+      var mounts = doc.querySelectorAll('[data-fjb-status-mount]');
+      for (var i = 0; i < mounts.length; i++) {
+        var mount = mounts[i];
+        if (mount.getAttribute('data-fjb-injected')) continue; // 已注入跳过
+        mount.setAttribute('data-fjb-injected', '1');
+        mount.innerHTML = ''; // 清空 loading 文字
+
+        var iframe = doc.createElement('iframe');
+        iframe.style.cssText = 'width:100%;border:none;border-radius:12px;min-height:280px;background:transparent';
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        iframe.setAttribute('data-fjb-status-iframe', '1');
+        // srcdoc 注入状态栏 HTML
+        iframe.srcdoc = html;
+        mount.appendChild(iframe);
+        console.log('[假阴茎卡] 状态栏iframe已注入');
+      }
+    });
+  }
+
+  // ===== 卡内兜底状态栏 HTML（简化版，CDN 全部失败时使用） =====
+  function getFallbackStatusBarHTML() {
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:rgba(255,240,245,.6);color:#8b3a52;padding:8px;font-size:13px}' +
+      '.hdr{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;background:rgba(255,182,193,.15);border-radius:10px;margin-bottom:6px}' +
+      '.hdr span{font-size:11px;color:#ff69b4}.stat{display:flex;gap:8px;flex-wrap:wrap}.stat div{background:rgba(255,182,193,.1);border:1px solid rgba(255,105,180,.15);border-radius:8px;padding:4px 8px;font-size:11px}' +
+      '</style></head><body><div id="sb-root">' +
+      '<div class="hdr"><span>📊 状态栏（卡内兜底版）</span></div>' +
+      '<div class="stat" id="stat-display">等待数据…</div>' +
+      '<script>' +
+      'window.addEventListener("message",function(e){' +
+      'if(!e.data)return;' +
+      'if(e.data.type==="fjb-mvu-stat-data"&&e.data.stat_data){' +
+      'var s=e.data.stat_data;var d=document.getElementById("stat-display");d.innerHTML="";' +
+      'if(s.stats){' +
+      'd.innerHTML+="<div>⚡精力:"+(s.stats.energy||0)+"/"+(s.stats.energy_max||0)+"</div>";' +
+      'd.innerHTML+="<div>🧠理智:"+(s.stats.sanity||0)+"</div>";' +
+      'd.innerHTML+="<div>🔍疑心:"+(s.stats.suspicion||0)+"</div>";' +
+      'd.innerHTML+="<div>🌑沉沦:"+(s.stats.corruption||0)+"</div>";' +
+      'd.innerHTML+="<div>💰金钱:"+(s.stats.money||0)+"</div>";' +
+      'd.innerHTML+="<div>📊阶段:"+(s.use_stage?s.use_stage.current:1)+"/5</div>";' +
+      '}' +
+      'if(s.time){d.innerHTML+="<div>📅第"+(s.time.day||1)+"天 "+(s.time.hour||8)+":00</div>"}' +
+      '}' +
+      '});' +
+      'window.parent.postMessage({type:"fjb-mvu-stat-request",messageId:-1},"*");' +
+      '<\/script></div></body></html>';
   }
 
   // ===== 控制中心面板 =====
@@ -347,13 +467,25 @@ $(async () => {
     // 触发开局页
     triggerOpeningPage();
 
-    // 定期检查悬浮球是否存在（防止被其他脚本清除）
+    // 注入状态栏（云端加载 + iframe 注入）
+    await injectStatusBars();
+
+    // 检查云端版本（异步，不阻塞）
+    checkRemoteVersion().then(function (m) {
+      if (m && m.version && m.version !== RT_VERSION) {
+        console.log('[假阴茎卡] 云端有新版本:', m.version, '当前:', RT_VERSION);
+      }
+    });
+
+    // 定期检查悬浮球 + 状态栏注入（防止被其他脚本清除或新消息渲染后需要重新注入）
     setInterval(function () {
       var sw = getSwitches();
       if (sw.floatball) {
         var root = getRootDoc();
         if (!root.getElementById(BALL_ID)) ensureBall();
       }
+      // 重新注入未处理的状态栏挂载点（新消息渲染后可能出现新的挂载点）
+      injectStatusBars();
     }, 2000);
   }
 
