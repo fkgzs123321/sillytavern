@@ -28,7 +28,7 @@ $(async () => {
 
   // ===== 云端 runtime 配置（对齐星月多源容错架构） =====
   var RT_VERSION = '2.0.0';
-  var RT_REVISION = '20260722-200-r3';
+  var RT_REVISION = '20260722-202-r5';
   var REPO = 'fkgzs123321/sillytavern';
   var RT_PATH = '/runtime/byd/' + RT_VERSION;
   var CDN_SOURCES = [

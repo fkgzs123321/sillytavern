@@ -1,6 +1,6 @@
 ﻿{
     "version":  "2.0.0",
-    "revision":  "20260722-202-r5",
+    "revision":  "20260722-203-r6",
     "pinnedCommit":  "main",
     "minRuntimeRevision":  201,
     "description":  "不要玩弄我的鸡吧 - 云端 runtime v2.0.0（修复DEFAULT_STAT+8个UI bug+RPG字段兜底）",
@@ -45,7 +45,7 @@
                                            "file":  "control-center.js",
                                            "size":  25460,
                                            "type":  "js",
-                                           "description":  "控制中心 v2.0.0：悬浮球+开关+主题+状态栏/开局页/OMNI/Bubble/提示词注入"
+                                           "description":  "控制中心 v2.0.1（RT_REVISION r5 + 状态栏占位正则支持）"
                                        }
                 }
 }
