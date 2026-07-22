@@ -550,14 +550,14 @@ label{display:block}
 </head>
 <body>
 
-<!-- ===== 开局页根容器 ===== -->
-<div class="fjb-opening" data-fjb-opening data-fjb-view="boot">
+<!-- ===== 开局页根容器（结构校验标记，对齐星月 data-xy-opening-page） ===== -->
+<div class="fjb-opening" data-fjb-opening data-fjb-opening-page="2.0.0" data-fjb-view="boot">
 
   <!-- 工坊入口（悬浮） -->
-  <button type="button" class="fjb-workshop-entry" data-fjb-action="open-workshop">✦ 创意工坊</button>
+  <button type="button" class="fjb-workshop-entry" data-fjb-action="open-workshop" data-fjb-opening-action="open-workshop">✦ 创意工坊</button>
 
-  <!-- ============ 视图1：boot 封面 ============ -->
-  <section class="fjb-view fjb-view-boot active" data-fjb-view-name="boot">
+  <!-- ============ 视图1：boot 封面（结构校验锚点 data-fjb-view-name="boot"） ============ -->
+  <section class="fjb-view fjb-view-boot active" data-fjb-view-name="boot" data-fjb-opening-action="enter-entry">
     <div class="fjb-boot">
       <div class="fjb-boot-main">
         <div class="fjb-brand-line">不要玩弄我的鸡吧 · 开局引导</div>
