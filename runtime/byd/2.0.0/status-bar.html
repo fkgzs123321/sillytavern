@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -292,7 +293,7 @@ function barClass5(v){v=parseInt(v)||0;if(v>=80)return'g';if(v>=60)return'b';if(
 function kv(k,v,cls){return '<div class="kv"><span class="k">'+k+'</span><span class="v'+(cls?' '+cls:'')+'">'+esc(v)+'</span></div>'}
 function bar(label,val,max,cls){max=max||100;var v=num(val,0);cls=cls||barClass4;return '<div class="bar"><div class="bar-h"><span>'+label+'</span><span class="bv">'+v+'/'+max+'</span></div><div class="bar-t"><div class="bar-f '+cls(v)+'" style="width:'+pct(v,max)+'%"></div></div></div>'}
 
-var DEFAULT_STAT={basic:{name:"玩家",gender:"男",age:18,school:"私立星月女子学院",grade_class:"高三2班"},time:{day:1,hour:8,weekday:"周一",date_str:"09-01 周一",semester_day:1},stats:{energy:80,energy_max:80,sanity:80,health:75,stress:10,suspicion:0,corruption:0,money:500,difficulty:"困难",stamina:80},skills:{meditation:{level:2,exp:0,daily_used:0,daily_max:50},exercise:{level:1,exp:0,daily_used:0,daily_max:40},insight:{level:1,exp:0,daily_used:0,daily_max:40},disguise:{level:1,exp:0,daily_used:0,daily_max:30},recovery:{level:1,exp:0,daily_used:0,daily_max:30},willpower:{level:1,exp:0,daily_used:0,daily_max:30}},use_stage:{current:1,total_uses:0,today_uses:0,last_use_day:0,stage_progress:0},academic:{score:75,stage:3,study_count_today:0,exam_countdown:126,teacher_attention:0},_symptoms:{fatigue_desc:"暂无异常",sensitivity_desc:"暂无异常",appearance_desc:"气色正常",sanity_desc:"情绪稳定"},_check_suggestions:[],tasks:[],rule_changes:{world_changes:[],school_changes:[]}};
+var DEFAULT_STAT={basic:{name:"玩家",gender:"男",age:18,school:"私立星月女子学院",grade_class:"高三2班"},time:{day:1,hour:8,weekday:"周一",date_str:"09-01 周一",semester_day:1},stats:{energy:80,energy_max:80,sanity:80,health:75,stress:10,suspicion:0,corruption:0,money:500,difficulty:"困难",stamina:80},skills:{meditation:{level:2,exp:0,daily_used:0,daily_max:50},exercise:{level:1,exp:0,daily_used:0,daily_max:40},insight:{level:1,exp:0,daily_used:0,daily_max:40},disguise:{level:1,exp:0,daily_used:0,daily_max:30},recovery:{level:1,exp:0,daily_used:0,daily_max:30},willpower:{level:1,exp:0,daily_used:0,daily_max:30}},use_stage:{current:1,total_uses:0,today_uses:0,last_use_day:0,stage_progress:0},academic:{score:75,stage:3,study_count_today:0,exam_countdown:126,teacher_attention:0},_symptoms:{fatigue_desc:"暂无异常",sensitivity_desc:"暂无异常",appearance_desc:"气色正常",sanity_desc:"情绪稳定"},_check_suggestions:[],tasks:[],rule_changes:{world_changes:[],school_changes:[]},environment:{weather:"晴",temperature:"22°C",location:"私立星月女子学院·校门口",humidity:"50%",activities:[],news:[]},radar_system:[],inventory:[],storage:[],items_placed:[],crafting_recipes:[],vehicles:[],residences:[],shop_goods:[],_hidden:{recent_events:[]}};
 
 function deepMergeStat(dst,src){if(!src||typeof src!=='object')return dst;var out={};try{out=JSON.parse(JSON.stringify(dst||{}))}catch(e){out={}}for(var k in src){if(!Object.prototype.hasOwnProperty.call(src,k))continue;var sv=src[k],dv=out[k];if(sv&&typeof sv==='object'&&!Array.isArray(sv)&&dv&&typeof dv==='object'&&!Array.isArray(dv)){out[k]=deepMergeStat(dv,sv)}else{out[k]=sv}}return out}
 function mvuObj(key,sub){var o=DEFAULT_STAT;try{o=State.mvu||DEFAULT_STAT}catch(e){}if(!o||typeof o!=='object')o=DEFAULT_STAT;var v=o[key];if(v&&typeof v==='object'&&sub!==undefined)v=v[sub];return v||{}}
@@ -422,3 +423,4 @@ async function refresh(){if(State._refreshing)return;State._refreshing=true;Stat
 </script>
 </body>
 </html>
+```

@@ -1,51 +1,51 @@
-{
-  "version": "2.0.0",
-  "revision": "20260722-201-r4",
-  "pinnedCommit": "main",
-  "minRuntimeRevision": 201,
-  "description": "不要玩弄我的鸡吧 - 云端 runtime v2.0.0（完全对齐星月，修复8个UI bug）",
-  "modules": {
-    "status-bar": {
-      "file": "status-bar.html",
-      "size": 79310,
-      "type": "html",
-      "description": "状态栏 v2.0.1（修复雷达vals[j]/移动端溢出/筛选/搜索等8个bug）"
-    },
-    "opening-page": {
-      "file": "opening-page.html",
-      "size": 59108,
-      "type": "html",
-      "description": "开局页（3视图：boot/wizard/workshop）"
-    },
-    "omni-analysis": {
-      "file": "omni-analysis.html",
-      "size": 6232,
-      "type": "html",
-      "description": "OMNI变量预分析面板"
-    },
-    "omni-progress": {
-      "file": "omni-progress.html",
-      "size": 5854,
-      "type": "html",
-      "description": "OMNI同步中状态UI"
-    },
-    "omni-done": {
-      "file": "omni-done.html",
-      "size": 6986,
-      "type": "html",
-      "description": "OMNI同步完成UI"
-    },
-    "bubble-css": {
-      "file": "bubble.css",
-      "size": 4621,
-      "type": "css",
-      "description": "对话气泡样式（用户/NPC/旁白三态）"
-    },
-    "control-center": {
-      "file": "control-center.js",
-      "size": 25460,
-      "type": "js",
-      "description": "控制中心 v2.0.0：悬浮球+开关+主题+状态栏/开局页/OMNI/Bubble/提示词注入"
-    }
-  }
+﻿{
+    "version":  "2.0.0",
+    "revision":  "20260722-202-r5",
+    "pinnedCommit":  "main",
+    "minRuntimeRevision":  201,
+    "description":  "不要玩弄我的鸡吧 - 云端 runtime v2.0.0（修复DEFAULT_STAT+8个UI bug+RPG字段兜底）",
+    "modules":  {
+                    "status-bar":  {
+                                       "file":  "status-bar.html",
+                                       "size":  79597,
+                                       "type":  "html",
+                                       "description":  "状态栏 v2.0.2（DEFAULT_STAT含RPG字段兜底：environment/radar/inventory/storage/crafting/vehicles/residences/shop_goods/tasks/rule_changes）"
+                                   },
+                    "opening-page":  {
+                                         "file":  "opening-page.html",
+                                         "size":  59108,
+                                         "type":  "html",
+                                         "description":  "开局页（3视图：boot/wizard/workshop）"
+                                     },
+                    "omni-analysis":  {
+                                          "file":  "omni-analysis.html",
+                                          "size":  6232,
+                                          "type":  "html",
+                                          "description":  "OMNI变量预分析面板"
+                                      },
+                    "omni-progress":  {
+                                          "file":  "omni-progress.html",
+                                          "size":  5854,
+                                          "type":  "html",
+                                          "description":  "OMNI同步中状态UI"
+                                      },
+                    "omni-done":  {
+                                      "file":  "omni-done.html",
+                                      "size":  6986,
+                                      "type":  "html",
+                                      "description":  "OMNI同步完成UI"
+                                  },
+                    "bubble-css":  {
+                                       "file":  "bubble.css",
+                                       "size":  4621,
+                                       "type":  "css",
+                                       "description":  "对话气泡样式（用户/NPC/旁白三态）"
+                                   },
+                    "control-center":  {
+                                           "file":  "control-center.js",
+                                           "size":  25460,
+                                           "type":  "js",
+                                           "description":  "控制中心 v2.0.0：悬浮球+开关+主题+状态栏/开局页/OMNI/Bubble/提示词注入"
+                                       }
+                }
 }
